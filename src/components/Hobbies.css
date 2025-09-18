@@ -1,0 +1,219 @@
+.hobbies {
+    padding: 5rem 0;
+    background: var(--color-bg);
+    /* unify */
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--color-heading);
+    margin-bottom: .75rem;
+    letter-spacing: .5px;
+}
+
+.section-subtitle {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--color-text-soft);
+    margin-bottom: 2.8rem;
+    letter-spacing: .7px;
+}
+
+.hobbies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2rem;
+}
+
+/* Category specific layout */
+/* Vertical stack for categories */
+.hobbies-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2.6rem;
+}
+
+.hobby-category {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+
+.hobby-category .hobby-name {
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.hobby-category .hobby-description {
+    text-align: center;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hobby-images {
+    margin-top: 1.4rem;
+    display: grid;
+    justify-content: center;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.1rem;
+}
+
+/* Center variant for cassette if few images */
+.hobby-images--center {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.1rem;
+    width: 100%;
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hobby-category--center {
+    align-items: center;
+    text-align: center;
+}
+
+.hobby-image-wrapper {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    background: #0d0d0d;
+    box-shadow: 0 8px 22px -8px rgba(0, 0, 0, .65);
+    transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.hobby-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .5s ease;
+}
+
+.hobby-image-wrapper:hover img {
+    transform: scale(1.05) rotate(.4deg);
+}
+
+.hobby-image-wrapper:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 12px 28px -10px rgba(0, 0, 0, .75), 0 0 0 4px rgba(30, 107, 255, 0.12);
+    transform: translateY(-3px);
+}
+
+.hobby-images-empty {
+    grid-column: 1 / -1;
+    padding: 1rem .75rem;
+    font-size: .85rem;
+    color: var(--color-text-soft);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    letter-spacing: .5px;
+}
+
+.hobby-card {
+    position: relative;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 1.8rem 1.6rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.hobby-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(30, 107, 255, 0.15), transparent 70%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.hobby-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-accent);
+}
+
+.hobby-card:hover::before {
+    opacity: 1;
+}
+
+.hobby-icon {
+    font-size: 2.4rem;
+    margin-bottom: .9rem;
+    display: block;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .4));
+}
+
+.hobby-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-heading);
+    margin-bottom: .65rem;
+    letter-spacing: .5px;
+}
+
+.hobby-description {
+    color: var(--color-text-soft);
+    line-height: 1.55;
+    font-size: .95rem;
+}
+
+@media (max-width: 860px) {
+    .hobbies {
+        padding: 4.2rem 0;
+    }
+
+    .hobbies-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.4rem;
+    }
+
+    .hobby-images {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: .9rem;
+    }
+
+    .hobby-images--center {
+        display: flex;
+        justify-content: center;
+        gap: .9rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .hobbies {
+        padding: 3.8rem 0;
+    }
+
+    .section-title {
+        font-size: 1.9rem;
+    }
+
+    .hobby-card {
+        padding: 1.4rem 1.2rem;
+    }
+
+    .hobby-images {
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: .75rem;
+    }
+
+    .hobby-images--center {
+        display: flex;
+        justify-content: center;
+        gap: .75rem;
+    }
+}

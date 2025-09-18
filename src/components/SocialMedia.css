@@ -1,0 +1,158 @@
+/* Dark themed SocialMedia section aligned with global tokens */
+.social-media {
+    padding: 4.8rem 0 4.4rem;
+    position: relative;
+    background: var(--color-bg);
+    /* flat black */
+}
+
+.social-media::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.62));
+    /* lightened */
+    pointer-events: none;
+}
+
+.social-media .section-title {
+    color: #ffffff !important;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, .55), 0 0 8px rgba(255, 255, 255, .18);
+}
+
+.social-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 1.6rem;
+    margin-bottom: 2.4rem;
+}
+
+.social-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.55rem 1.4rem 1.6rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .35rem;
+    transition: var(--transition-base);
+    isolation: isolate;
+}
+
+.social-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(30, 107, 255, 0.22), transparent 70%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.social-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.04), transparent 60%);
+    mix-blend-mode: overlay;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.social-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-md);
+}
+
+.social-card:hover::before,
+.social-card:hover::after {
+    opacity: 1;
+}
+
+.social-icon {
+    font-size: 2.4rem;
+    line-height: 1;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .4));
+    margin-bottom: .2rem;
+}
+
+.social-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: .4px;
+    color: var(--color-heading);
+}
+
+.social-username {
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--color-accent);
+    letter-spacing: .6px;
+    text-transform: uppercase;
+}
+
+.social-description {
+    font-size: .78rem;
+    line-height: 1.5;
+    color: var(--color-text-soft);
+    text-align: center;
+    margin-top: .2rem;
+    margin-bottom: .4rem;
+}
+
+.social-arrow {
+    margin-top: auto;
+    font-size: 1.25rem;
+    color: var(--color-accent);
+    transition: transform var(--transition-fast);
+}
+
+.social-card:hover .social-arrow {
+    transform: translateX(8px);
+}
+
+/* Focus accessibility */
+.social-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+}
+
+
+@media (max-width: 900px) {
+    .social-media {
+        padding: 4.2rem 0 4rem;
+    }
+}
+
+@media (max-width: 780px) {
+    .social-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .social-media .section-title {
+        font-size: 2.05rem;
+    }
+
+    .social-media .section-subtitle {
+        font-size: .95rem;
+        margin-bottom: 2.2rem;
+    }
+
+}
+
+@media (max-width: 620px) {
+    .social-media {
+        padding: 3.6rem 0 3.4rem;
+    }
+
+
+    .social-grid {
+        gap: 1.25rem;
+    }
+}

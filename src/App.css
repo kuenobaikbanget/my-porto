@@ -1,0 +1,143 @@
+.App {
+  text-align: left;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+main {
+  overflow-x: hidden;
+}
+
+section {
+  position: relative;
+  padding: 5rem 0;
+}
+
+section:first-of-type {
+  padding-top: 6rem;
+}
+
+/* Card primitive */
+.card-surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.card-surface:hover {
+  background: var(--color-surface-alt);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent);
+}
+
+/* Accent text utilities */
+.accent {
+  color: var(--color-accent);
+}
+
+.muted {
+  color: var(--color-text-soft);
+}
+
+/* Buttons (if needed) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: var(--gradient-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: .75rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.btn:hover {
+  box-shadow: 0 4px 18px -2px rgba(30, 107, 255, .45);
+}
+
+.btn:active {
+  transform: translateY(2px);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--color-accent-glow);
+}
+
+/* Grid helpers */
+.auto-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp .8s ease forwards;
+}
+
+/* Divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+  margin: 3rem 0;
+}
+
+/* Utilities spacing */
+.mt-1 {
+  margin-top: .5rem;
+}
+
+.mt-2 {
+  margin-top: 1rem;
+}
+
+.mt-3 {
+  margin-top: 1.5rem;
+}
+
+.mt-4 {
+  margin-top: 2rem;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  section {
+    padding: 4rem 0;
+  }
+}
+
+@media (max-width: 640px) {
+  section {
+    padding: 3.5rem 0;
+  }
+
+  section:first-of-type {
+    padding-top: 5.5rem;
+  }
+}
