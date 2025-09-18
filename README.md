@@ -34,9 +34,3 @@ This is my personal portfolio site. Here you can find:
 ## 📸 Preview
 
 ![Screenshot](public/ss.png)
-
-## 🙋‍♂️ Author
-
-- **kuenobaikbanget**
-- [GitHub](https://github.com/kuenobaikbanget)
-- [Instagram](https://instagram.com/kuenobaikbanget)
