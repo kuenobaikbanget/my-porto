@@ -1,9 +1,7 @@
-/* Dark themed SocialMedia section aligned with global tokens */
 .social-media {
     padding: 4.8rem 0 4.4rem;
     position: relative;
     background: var(--color-bg);
-    /* flat black */
 }
 
 .social-media::before {
@@ -11,7 +9,6 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.62));
-    /* lightened */
     pointer-events: none;
 }
 

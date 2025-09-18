@@ -1,26 +1,27 @@
 import React from 'react';
 import './SocialMedia.css';
+import { FaGithub, FaInstagram, FaSteam } from 'react-icons/fa';
 
 const SocialMedia: React.FC = () => {
     const socialLinks = [
         {
             name: 'GitHub',
             url: 'https://github.com/kuenobaikbanget',
-            icon: '🐙',
+            icon: <FaGithub size={32} />,
             username: '@kuenobaikbanget',
             description: 'Check out my code repositories'
         },
         {
             name: 'Instagram',
             url: 'https://www.instagram.com/_akbardwi/',
-            icon: '📷',
+            icon: <FaInstagram size={32} />,
             username: '@_akbardwi',
             description: 'Mostly about coffee and cats lol'
         },
         {
             name: 'Steam',
             url: 'https://steamcommunity.com/id/kueno',
-            icon: '🎮',
+            icon: <FaSteam size={32} />,
             username: 'kueno',
             description: 'Peak unemployment'
         }
