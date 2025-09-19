@@ -38,6 +38,12 @@ const categories: HobbyCategory[] = [
         title: 'Mouse',
         description: '',
         images: collect('hobimouse')
+    },
+    {
+        key: 'hobikopi',
+        title: 'Coffee',
+        description: '',
+        images: collect('hobikopi')
     }
 ];
 
