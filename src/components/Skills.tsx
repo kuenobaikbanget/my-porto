@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import './Skills.css';
 import { FaFilter, FaCode, FaTools, FaDatabase } from 'react-icons/fa';
+import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 
 type Category = 'all' | 'languages' | 'tools' | 'database';
 
@@ -32,6 +33,7 @@ const categories: { key: Category; label: string; icon: React.ReactNode }[] = [
 
 const Skills: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState<Category>('all');
+    const { ref, isVisible } = useRevealOnScroll<HTMLElement>({ threshold: 0.15 });
 
     const skills = useMemo(() => (
         activeCategory === 'all'
@@ -40,12 +42,21 @@ const Skills: React.FC = () => {
     ), [activeCategory]);
 
     return (
-        <section id="skills" className="skills">
-            <div className="container">
-                <h2 className="section-title">My Skills</h2>
-                <p className="section-subtitle">things that i know lol</p>
+        <section
+            id="skills"
+            ref={ref}
+            className="skills"
+        >
+            <div className={`container reveal-section ${isVisible ? 'is-visible' : ''}`}>
+                <h2 className="section-title reveal-item">My Skills</h2>
+                <p className="section-subtitle reveal-item" style={{ transitionDelay: '0.05s' }}>things that i know lol</p>
 
-                <div className="skills-controls" role="tablist" aria-label="Skill categories">
+                <div
+                    className="skills-controls reveal-item"
+                    role="tablist"
+                    aria-label="Skill categories"
+                    style={{ transitionDelay: '0.12s' }}
+                >
                     <div className="segmented segmented--categories">
                         {categories.map(cat => (
                             <button
@@ -63,8 +74,12 @@ const Skills: React.FC = () => {
                 </div>
 
                 <div className="skills-grid">
-                    {skills.map(skill => (
-                        <div key={`${skill.name}-${skill._idx}`} className="skill-item">
+                    {skills.map((skill, index) => (
+                        <div
+                            key={`${skill.name}-${skill._idx}`}
+                            className="skill-item reveal-item"
+                            style={{ transitionDelay: `${0.18 + index * 0.06}s` }}
+                        >
                             <div className="skill-header">
                                 <span className="skill-name">{skill.name}</span>
                                 <span className="skill-percentage">{skill.level}%</span>

@@ -22,13 +22,9 @@ This is my personal portfolio site. Here you can find:
    ```powershell
    npm install
    ```
-2. **Run locally:**
+2. **Run:**
    ```powershell
    npm run dev
-   ```
-3. **Build for production:**
-   ```powershell
-   npm run build
    ```
 
 ## 📸 Preview

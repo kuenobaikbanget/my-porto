@@ -86,7 +86,9 @@
     border: 2px solid var(--color-border);
     background: #0d0d0d;
     box-shadow: 0 8px 22px -8px rgba(0, 0, 0, .65);
-    transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity .45s ease, transform .45s ease, border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .hobby-image-wrapper img {
@@ -99,6 +101,11 @@
 
 .hobby-image-wrapper:hover img {
     transform: scale(1.05) rotate(.4deg);
+}
+
+.hobby-card.is-visible .hobby-image-wrapper {
+    opacity: 1;
+    transform: scale(1);
 }
 
 .hobby-image-wrapper:hover {
@@ -125,10 +132,17 @@
     padding: 1.8rem 1.6rem;
     text-align: center;
     box-shadow: var(--shadow-sm);
-    transition: var(--transition-base);
+    transition: opacity .6s ease, transform .6s ease, box-shadow var(--transition-base), border-color var(--transition-base);
     border: 1px solid var(--color-border);
     overflow: hidden;
     isolation: isolate;
+    opacity: 0;
+    transform: translateY(36px);
+}
+
+.hobby-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .hobby-card::before {

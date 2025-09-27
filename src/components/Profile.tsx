@@ -18,7 +18,7 @@ const Profile: React.FC = () => {
                         <h2 className="profile-name">Akbar Dwi</h2>
                         <p className="profile-title">unemployment</p>
                         <p className="profile-description">
-                            I'm an Information Systems student who is genuinely <strong>curious</strong> about new things. That curiosity drives me to try, take apart, and understand how things work, from simple hardware to IoT and small automation ideas. I enjoy experimenting, debugging, and turning raw concepts into something real.
+                            I'm an undergraduate student majoring in Information Systems. I'm genuinely <strong>curious</strong> about new things. That curiosity drives me to try, take apart, and understand how things work, from simple hardware to IoT and small automation ideas. I enjoy experimenting, debugging, and turning raw concepts into something real.
                         </p>
                         <div className="profile-details">
                             <div className="detail-item">
@@ -27,7 +27,7 @@ const Profile: React.FC = () => {
                             <div className="detail-item profile-education single-line">
                                 <span className="detail-label">Education:</span>
                                 <span className="education-lines">
-                                    <span className="education-role">Information Systems Student</span>
+                                    <span className="education-role">Information Systems</span>
                                     <span className="education-separator">·</span>
                                     <a className="education-institution" href="https://upnvj.ac.id" target="_blank" rel="noopener noreferrer">UPN "Veteran" Jakarta</a>
                                 </span>

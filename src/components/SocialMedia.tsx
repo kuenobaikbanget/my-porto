@@ -1,6 +1,7 @@
 import React from 'react';
 import './SocialMedia.css';
 import { FaGithub, FaInstagram, FaSteam } from 'react-icons/fa';
+import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 
 const SocialMedia: React.FC = () => {
     const socialLinks = [
@@ -27,11 +28,17 @@ const SocialMedia: React.FC = () => {
         }
     ];
 
+    const { ref, isVisible } = useRevealOnScroll<HTMLElement>({ threshold: 0.15 });
+
     return (
-        <section id="social" className="social-media">
-            <div className="container">
-                <h2 className="section-title">Get In Touch</h2>
-                <p className="section-subtitle">Connect with me on social media</p>
+        <section
+            id="social"
+            ref={ref}
+            className="social-media"
+        >
+            <div className={`container reveal-section ${isVisible ? 'is-visible' : ''}`}>
+                <h2 className="section-title reveal-item">Get In Touch</h2>
+                <p className="section-subtitle reveal-item" style={{ transitionDelay: '0.05s' }}>Connect with me on social media</p>
                 <div className="social-grid">
                     {socialLinks.map((social, index) => (
                         <a
@@ -39,7 +46,8 @@ const SocialMedia: React.FC = () => {
                             href={social.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="social-card"
+                            className="social-card reveal-item"
+                            style={{ transitionDelay: `${0.12 + index * 0.08}s` }}
                         >
                             <div className="social-icon">{social.icon}</div>
                             <h3 className="social-name">{social.name}</h3>
