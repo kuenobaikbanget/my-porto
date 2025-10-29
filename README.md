@@ -6,7 +6,7 @@
 
 ---
 
-## ✨ About
+## About
 
 This is my personal portfolio site. Here you can find:
 
@@ -16,7 +16,7 @@ This is my personal portfolio site. Here you can find:
 - Social media links
 - Built with a minimalist dark theme, blue accent, and fully responsive layout
 
-## 🚀 Getting Started
+## Getting Started
 
 1. **Install dependencies:**
    ```powershell
@@ -27,6 +27,6 @@ This is my personal portfolio site. Here you can find:
    npm run dev
    ```
 
-## 📸 Preview
+## Preview
 
 ![Screenshot](public/ss.png)
