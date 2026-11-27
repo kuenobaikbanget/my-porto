@@ -64,7 +64,7 @@ export const HobbiesBento: FC = () => {
       <SectionHeader
         eyebrow="OFF-DUTY BENCH"
         title="Off-Duty Craft"
-        subtitle="Mechanical keyboards, lightweight mice, Hario Switch coffee, and cassettes."
+        subtitle="Mechanical keyboards, lightweight mice, coffee, and cassettes."
         accentColor="pink"
       />
 

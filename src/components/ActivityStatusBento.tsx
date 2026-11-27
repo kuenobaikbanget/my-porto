@@ -298,7 +298,6 @@ export const ActivityStatusBento: FC = () => {
       <SectionHeader
         eyebrow="LED MATRIX"
         title="GitHub Activity"
-        subtitle={`Live GitHub LED contribution matrix for @${GITHUB_USERNAME}.`}
         accentColor="mint"
       />
 

@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FC } from 'react';
 import { useAsciiReveal } from 'ascii-reveal';
 import { skillCategories, skillsData, type SkillCategoryKey } from '../data/skills';
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 import { SectionHeader } from './SectionHeader';
 import { SkillKeycap } from './SkillKeycap';
+
+const GRID_RESIZE_DURATION_MS = 340;
+const GRID_RESIZE_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 const categoryLegendCssColor: Record<SkillCategoryKey, string> = {
   all: 'var(--theme-ink-primary)',
@@ -17,6 +20,8 @@ export const TechStackBento: FC = () => {
   const [activeCategory, setActiveCategory] = useState<SkillCategoryKey>('all');
   const [renderedCategory, setRenderedCategory] = useState<SkillCategoryKey>('all');
   const hasFilteredRef = useRef(false);
+  const gridViewportRef = useRef<HTMLDivElement | null>(null);
+  const prevHeightRef = useRef<number | null>(null);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
 
   const {
@@ -40,6 +45,9 @@ export const TechStackBento: FC = () => {
 
     void hideGrid({ origin: 'center', duration: 'cinematic', speed: 1.35 }).then(() => {
       if (!cancelled) {
+        if (gridViewportRef.current) {
+          prevHeightRef.current = gridViewportRef.current.getBoundingClientRect().height;
+        }
         setRenderedCategory(activeCategory);
       }
     });
@@ -48,6 +56,71 @@ export const TechStackBento: FC = () => {
       cancelled = true;
     };
   }, [activeCategory, renderedCategory, hideGrid]);
+
+  useLayoutEffect(() => {
+    const viewport = gridViewportRef.current;
+    const prevHeight = prevHeightRef.current;
+    prevHeightRef.current = null;
+
+    if (!viewport || prevHeight === null) return;
+
+    const resetStyles = () => {
+      viewport.style.height = '';
+      viewport.style.overflow = '';
+      viewport.style.transition = '';
+      viewport.style.willChange = '';
+    };
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const content = viewport.firstElementChild as HTMLElement | null;
+    if (prefersReducedMotion || !content) {
+      resetStyles();
+      return;
+    }
+
+    const nextHeight = content.getBoundingClientRect().height;
+    if (Math.abs(nextHeight - prevHeight) < 1) {
+      resetStyles();
+      return;
+    }
+
+    viewport.style.transition = 'none';
+    viewport.style.overflow = 'hidden';
+    viewport.style.willChange = 'height';
+    viewport.style.height = `${prevHeight}px`;
+
+    // Commit starting height before transitioning to the new height.
+    void viewport.offsetHeight;
+
+    viewport.style.transition = `height ${GRID_RESIZE_DURATION_MS}ms ${GRID_RESIZE_EASING}`;
+    viewport.style.height = `${nextHeight}px`;
+
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      viewport.removeEventListener('transitionend', handleTransitionEnd);
+      window.clearTimeout(fallbackTimer);
+      resetStyles();
+    };
+
+    const handleTransitionEnd = (event: TransitionEvent) => {
+      if (event.target === viewport && event.propertyName === 'height') {
+        finish();
+      }
+    };
+
+    viewport.addEventListener('transitionend', handleTransitionEnd);
+    const fallbackTimer = window.setTimeout(finish, GRID_RESIZE_DURATION_MS + 80);
+
+    return () => {
+      viewport.removeEventListener('transitionend', handleTransitionEnd);
+      window.clearTimeout(fallbackTimer);
+    };
+  }, [renderedCategory]);
 
   useEffect(() => {
     if (!hasFilteredRef.current) return;
@@ -107,10 +180,12 @@ export const TechStackBento: FC = () => {
         </div>
 
         {/* Bento Keycap Matrix */}
-        <div ref={gridRef} className="flex flex-wrap gap-2.5 pb-1">
-          {filteredSkills.map((skill) => (
-            <SkillKeycap key={`${skill.category}-${skill.name}`} skill={skill} />
-          ))}
+        <div ref={gridViewportRef}>
+          <div ref={gridRef} className="flex flex-wrap gap-2.5 pb-1">
+            {filteredSkills.map((skill) => (
+              <SkillKeycap key={`${skill.category}-${skill.name}`} skill={skill} />
+            ))}
+          </div>
         </div>
       </div>
     </section>
