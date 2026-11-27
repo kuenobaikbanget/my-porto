@@ -243,6 +243,10 @@
     border-color: var(--theme-border-hover);
   }
 
+  .bento-card.modal-surface {
+    transition: border-color 180ms ease;
+  }
+
   /* Recessed Windowed Well (for LED badges & keyboard wells) */
   .recessed-well {
     background-color: var(--theme-well);
@@ -471,7 +475,7 @@
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, -10px, 0) scale(0.9);
+    transform: translate3d(0, -18px, 0) scale(0.86);
   }
 }
 
@@ -493,17 +497,17 @@
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, -6px, 0) scale(0.9);
+    transform: translate3d(0, -10px, 0) scale(0.86);
   }
 }
 
 .hypr-backdrop-in {
-  animation: hypr-backdrop-in 190ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hypr-backdrop-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity;
 }
 
 .hypr-backdrop-out {
-  animation: hypr-backdrop-out 155ms ease-out forwards;
+  animation: hypr-backdrop-out 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   will-change: opacity;
   pointer-events: none;
 }
@@ -516,7 +520,7 @@
 
 .hypr-runner-out {
   transform-origin: center top;
-  animation: hypr-runner-out 165ms cubic-bezier(0.36, 0, 0.66, 0) forwards;
+  animation: hypr-runner-out 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   will-change: transform, opacity;
   pointer-events: none;
 }
@@ -529,7 +533,7 @@
 
 .hypr-modal-out {
   transform-origin: center center;
-  animation: hypr-modal-out 165ms cubic-bezier(0.36, 0, 0.66, 0) forwards;
+  animation: hypr-modal-out 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   will-change: transform, opacity;
   pointer-events: none;
 }

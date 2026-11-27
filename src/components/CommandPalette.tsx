@@ -7,6 +7,7 @@ import {
   type FC,
   type KeyboardEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 import {
   LuArrowUpRight,
   LuCheck,
@@ -70,6 +71,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
 
   useDialogA11y({
     isOpen,
+    isPresent: isMounted,
     onClose,
     dialogRef,
     initialFocusRef: inputRef,
@@ -437,7 +439,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     }
   };
 
-  if (!isMounted) return null;
+  if (!isMounted || typeof document === 'undefined') return null;
 
   const renderGroupIcon = (item: PaletteItem) => {
     if (item.group === 'Command') {
@@ -474,9 +476,9 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
           ? 'text-[var(--theme-accent-pink)]'
           : 'text-[var(--theme-ink-primary)]';
 
-  return (
+  return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-start justify-center bg-[var(--theme-backdrop)] px-3 pt-16 pb-6 backdrop-blur-sm sm:px-4 sm:pt-24 ${
+      className={`fixed inset-0 z-[100] flex items-start justify-center bg-[var(--theme-backdrop)] px-3 pt-16 pb-6 backdrop-blur-[3px] sm:px-4 sm:pt-24 ${
         isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
       }`}
       aria-hidden={isClosing || undefined}
@@ -487,7 +489,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="Terminal Command Palette"
-        className={`bento-card flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden ${
+        className={`bento-card modal-surface flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden ${
           isClosing ? 'hypr-runner-out' : 'hypr-runner-in'
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -653,6 +655,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
           <span>kueno@tty // palette</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

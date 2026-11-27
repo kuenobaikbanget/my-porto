@@ -22,8 +22,35 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   });
 }
 
+let scrollLockCount = 0;
+let savedOverflow = '';
+let savedPaddingRight = '';
+
+function acquireScrollLock(): void {
+  if (scrollLockCount === 0) {
+    savedOverflow = document.body.style.overflow;
+    savedPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+  }
+  scrollLockCount += 1;
+}
+
+function releaseScrollLock(): void {
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) {
+    document.body.style.overflow = savedOverflow;
+    document.body.style.paddingRight = savedPaddingRight;
+  }
+}
+
 interface UseDialogA11yOptions {
   isOpen: boolean;
+  isPresent?: boolean;
   onClose: () => void;
   dialogRef: RefObject<HTMLElement | null>;
   initialFocusRef?: RefObject<HTMLElement | null>;
@@ -35,35 +62,36 @@ interface UseDialogA11yOptions {
  * - Moves focus inside the dialog when opened
  * - Traps Tab / Shift+Tab cycling within the dialog
  * - Closes on Escape
- * - Locks body scroll with scrollbar-width compensation to prevent layout shift
+ * - Ref-count locks body scroll with scrollbar-width compensation while present
  */
 export function useDialogA11y({
   isOpen,
+  isPresent,
   onClose,
   dialogRef,
   initialFocusRef,
 }: UseDialogA11yOptions): void {
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
+  const shouldLockScroll = isPresent ?? isOpen;
 
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
 
   useEffect(() => {
+    if (!shouldLockScroll) return;
+    acquireScrollLock();
+    return () => {
+      releaseScrollLock();
+    };
+  }, [shouldLockScroll]);
+
+  useEffect(() => {
     if (!isOpen) return;
 
     previousFocusRef.current =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
-
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
 
     const focusIntoDialog = () => {
       const dialogEl = dialogRef.current;
@@ -136,8 +164,6 @@ export function useDialogA11y({
     return () => {
       window.cancelAnimationFrame(rafId);
       window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
 
       const previous = previousFocusRef.current;
       if (previous && previous.isConnected) {

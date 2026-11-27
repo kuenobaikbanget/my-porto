@@ -1,4 +1,5 @@
 import { useCallback, useId, useRef, useState, type FC, type KeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { LuExpand, LuX } from 'react-icons/lu';
 import { hobbiesData, type HobbyCategory } from '../data/hobbies';
 import { useDialogA11y } from '../hooks/useDialogA11y';
@@ -23,6 +24,7 @@ export const HobbiesBento: FC = () => {
 
   useDialogA11y({
     isOpen: Boolean(lightboxImage),
+    isPresent: isMounted,
     onClose: closeLightbox,
     dialogRef: lightboxRef,
     initialFocusRef: lightboxCloseRef,
@@ -141,47 +143,50 @@ export const HobbiesBento: FC = () => {
         })}
       </div>
 
-      {/* Lightbox Modal */}
-      {isMounted && activeImage ? (
-        <div
-          className={`fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-backdrop)] p-4 backdrop-blur-sm ${
-            isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
-          }`}
-          aria-hidden={isClosing || undefined}
-          onClick={closeLightbox}
-        >
-          <div
-            ref={lightboxRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={activeImage.alt}
-            className={`bento-card relative max-h-[90vh] max-w-3xl overflow-hidden p-3 ${
-              isClosing ? 'hypr-modal-out' : 'hypr-modal-in'
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-2 flex items-center justify-between gap-4 px-1">
-              <span className="font-mono text-xs text-[var(--theme-ink-muted)]">
-                {activeImage.alt}
-              </span>
-              <button
-                ref={lightboxCloseRef}
-                type="button"
-                onClick={closeLightbox}
-                className="keycap min-h-[44px] min-w-[44px] p-2 text-xs text-[var(--theme-ink-primary)] sm:min-h-[36px] sm:min-w-[36px] sm:p-1.5"
-                aria-label="Close photo preview"
+      {/* Lightbox Modal (portaled to body so section reveal transform never traps it under Navbar) */}
+      {isMounted && activeImage && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className={`fixed inset-0 z-[100] flex items-center justify-center bg-[var(--theme-backdrop)] p-4 backdrop-blur-[3px] ${
+                isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
+              }`}
+              aria-hidden={isClosing || undefined}
+              onClick={closeLightbox}
+            >
+              <div
+                ref={lightboxRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label={activeImage.alt}
+                className={`bento-card modal-surface relative max-h-[90vh] max-w-3xl overflow-hidden p-3 ${
+                  isClosing ? 'hypr-modal-out' : 'hypr-modal-in'
+                }`}
+                onClick={(e) => e.stopPropagation()}
               >
-                <LuX className="h-4 w-4" aria-hidden="true" />
-              </button>
-            </div>
-            <img
-              src={activeImage.src}
-              alt={activeImage.alt}
-              className="max-h-[76vh] w-full rounded-xl object-contain"
-            />
-          </div>
-        </div>
-      ) : null}
+                <div className="mb-2 flex items-center justify-between gap-4 px-1">
+                  <span className="font-mono text-xs text-[var(--theme-ink-muted)]">
+                    {activeImage.alt}
+                  </span>
+                  <button
+                    ref={lightboxCloseRef}
+                    type="button"
+                    onClick={closeLightbox}
+                    className="keycap min-h-[44px] min-w-[44px] p-2 text-xs text-[var(--theme-ink-primary)] sm:min-h-[36px] sm:min-w-[36px] sm:p-1.5"
+                    aria-label="Close photo preview"
+                  >
+                    <LuX className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
+                <img
+                  src={activeImage.src}
+                  alt={activeImage.alt}
+                  className="max-h-[76vh] w-full rounded-xl object-contain"
+                />
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   );
 };

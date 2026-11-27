@@ -1,4 +1,5 @@
-import { useRef, type FC } from 'react';
+import { useEffect, useLayoutEffect, useRef, type FC } from 'react';
+import { createPortal } from 'react-dom';
 import {
   LuArrowUpRight,
   LuExternalLink,
@@ -20,26 +21,180 @@ interface ProjectSpecModalProps {
   onClose: () => void;
 }
 
+const MORPH_OPEN_MS = 280;
+const MORPH_CLOSE_MS = 220;
+const MORPH_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const FALLBACK_CLOSED_TRANSFORM = 'translate3d(0, -10px, 0) scale(0.86)';
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+function getVisibleCardRect(projectId: string): DOMRect | null {
+  const escapedId =
+    typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+      ? CSS.escape(projectId)
+      : projectId;
+  const cardEl = document.querySelector<HTMLElement>(
+    `[data-project-card-id="${escapedId}"]`,
+  );
+  if (!cardEl) return null;
+
+  const rect = cardEl.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return null;
+
+  const intersectsViewport =
+    rect.bottom > 0 &&
+    rect.top < window.innerHeight &&
+    rect.right > 0 &&
+    rect.left < window.innerWidth;
+
+  return intersectsViewport ? rect : null;
+}
+
+function computeCardMorphTransform(cardRect: DOMRect, modalRect: DOMRect): string {
+  const clamp = (val: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, val));
+
+  const cardCenterX = clamp(
+    cardRect.left + cardRect.width / 2,
+    24,
+    window.innerWidth - 24,
+  );
+  const cardCenterY = clamp(
+    cardRect.top + cardRect.height / 2,
+    24,
+    window.innerHeight - 24,
+  );
+  const modalCenterX = modalRect.left + modalRect.width / 2;
+  const modalCenterY = modalRect.top + modalRect.height / 2;
+
+  const dx = cardCenterX - modalCenterX;
+  const dy = cardCenterY - modalCenterY;
+  // Uniform scale preserves typography aspect ratio and avoids text squashing.
+  const scale = clamp(
+    Math.min(cardRect.width / modalRect.width, cardRect.height / modalRect.height),
+    0.42,
+    0.92,
+  );
+
+  return `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`;
+}
+
 export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
   project,
   onClose,
 }) => {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const { isMounted, isClosing, displayValue: activeProject } = useHyprPresence(project);
+  const animRef = useRef<Animation | null>(null);
+  const { isMounted, isClosing, displayValue: activeProject } = useHyprPresence(
+    project,
+    MORPH_CLOSE_MS + 10,
+  );
+  const activeProjectId = activeProject?.id ?? null;
 
   useDialogA11y({
     isOpen: Boolean(project),
+    isPresent: isMounted,
     onClose,
     dialogRef,
     initialFocusRef: closeButtonRef,
   });
 
-  if (!isMounted || !activeProject) return null;
+  useEffect(() => {
+    return () => {
+      animRef.current?.cancel();
+      animRef.current = null;
+    };
+  }, []);
 
-  return (
+  useLayoutEffect(() => {
+    const dialogEl = dialogRef.current;
+    if (!isMounted || !activeProjectId || !dialogEl) return;
+
+    const runningAnim = animRef.current;
+    const computed =
+      runningAnim && runningAnim.playState === 'running'
+        ? getComputedStyle(dialogEl)
+        : null;
+    const currentTransform =
+      computed && computed.transform !== 'none'
+        ? computed.transform
+        : null;
+    const currentOpacity = computed ? Number(computed.opacity) : null;
+
+    runningAnim?.cancel();
+    animRef.current = null;
+
+    if (prefersReducedMotion() || typeof dialogEl.animate !== 'function') {
+      return;
+    }
+
+    const modalRect = dialogEl.getBoundingClientRect();
+    if (modalRect.width <= 0 || modalRect.height <= 0) return;
+
+    const cardRect = getVisibleCardRect(activeProjectId);
+    const cardTransform = cardRect
+      ? computeCardMorphTransform(cardRect, modalRect)
+      : FALLBACK_CLOSED_TRANSFORM;
+
+    if (isClosing) {
+      const anim = dialogEl.animate(
+        [
+          {
+            opacity: currentOpacity ?? 1,
+            transform: currentTransform ?? 'translate3d(0, 0, 0) scale(1)',
+          },
+          {
+            opacity: 0,
+            transform: cardTransform,
+          },
+        ],
+        {
+          duration: MORPH_CLOSE_MS,
+          easing: MORPH_EASING,
+          fill: 'forwards',
+        },
+      );
+      animRef.current = anim;
+      return;
+    }
+
+    const anim = dialogEl.animate(
+      [
+        {
+          opacity: currentOpacity ?? (cardRect ? 0.15 : 0),
+          transform: currentTransform ?? cardTransform,
+        },
+        {
+          opacity: 1,
+          transform: 'translate3d(0, 0, 0) scale(1)',
+        },
+      ],
+      {
+        duration: MORPH_OPEN_MS,
+        easing: MORPH_EASING,
+        fill: 'both',
+      },
+    );
+    animRef.current = anim;
+    anim.onfinish = () => {
+      if (animRef.current === anim) {
+        anim.cancel();
+        animRef.current = null;
+      }
+    };
+  }, [isMounted, isClosing, activeProjectId]);
+
+  if (!isMounted || !activeProject || typeof document === 'undefined') return null;
+
+  return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-backdrop)] p-3 backdrop-blur-sm sm:p-6 ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[var(--theme-backdrop)] p-3 backdrop-blur-[3px] sm:p-6 ${
         isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
       }`}
       aria-hidden={isClosing || undefined}
@@ -50,8 +205,8 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="spec-modal-title"
-        className={`bento-card flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden ${
-          isClosing ? 'hypr-modal-out' : 'hypr-modal-in'
+        className={`bento-card modal-surface flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden will-change-transform ${
+          isClosing ? 'pointer-events-none' : ''
         }`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -208,6 +363,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

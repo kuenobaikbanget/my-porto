@@ -6,7 +6,7 @@ interface HyprPresenceResult<T> {
   displayValue: T | null;
 }
 
-const DEFAULT_EXIT_MS = 175;
+const DEFAULT_EXIT_MS = 230;
 
 function prefersReducedMotion(): boolean {
   return (
@@ -76,6 +76,14 @@ export function useHyprPresence<T>(
       isMounted: true,
       isClosing: false,
       displayValue: value,
+    };
+  }
+
+  if (prefersReducedMotion()) {
+    return {
+      isMounted: false,
+      isClosing: false,
+      displayValue: null,
     };
   }
 
