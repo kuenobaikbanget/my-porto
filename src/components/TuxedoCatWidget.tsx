@@ -233,6 +233,7 @@ export const TuxedoCatWidget: FC = () => {
   const activeAscii = current.frames[frameIndex % current.frames.length];
   const reactionClass =
     pokes === 0 ? '' : current.reactionType === 'shake' ? 'cat-shake' : 'cat-hop';
+  const showPokeCursor = pokes > 0 && current.mood !== 'sleepy';
 
   return (
     <div className="bento-card flex h-full flex-col justify-between p-5">
@@ -251,10 +252,10 @@ export const TuxedoCatWidget: FC = () => {
         type="button"
         onClick={handleInteract}
         aria-label={`Interactive terminal cat, currently ${current.mood}: ${current.bubble}. Click to interact.`}
-        className={`group my-4 flex flex-1 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border bg-[var(--theme-terminal-bg)] text-left shadow-[inset_0_2px_6px_var(--theme-terminal-shadow)] transition-colors hover:border-[var(--theme-ink-legend)] focus-visible:outline-2 focus-visible:outline-[var(--theme-accent-mint)] ${current.terminalBorderClass}`}
+        className={`group my-4 flex flex-1 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border bg-[var(--theme-terminal-bg)] text-left shadow-[inset_0_2px_6px_var(--theme-terminal-shadow)] transition-colors hover:border-[var(--theme-ink-legend)] focus-visible:outline-2 focus-visible:outline-[var(--theme-accent-mint)] motion-reduce:transition-none ${current.terminalBorderClass}`}
       >
         {/* Terminal Title Bar */}
-        <div className="flex items-center justify-between border-b border-[var(--theme-border-well)] bg-[var(--theme-terminal-bar)] px-3 py-2 font-mono text-[10px] text-[var(--theme-ink-legend)]">
+        <div className="flex items-center justify-between border-b border-[var(--theme-border-well)] bg-[var(--theme-terminal-bar)] px-3 py-2 font-mono text-[11px] text-[var(--theme-ink-legend)]">
           <div className="flex items-center gap-1.5" aria-hidden="true">
             <span className="h-2 w-2 rounded-full bg-[var(--theme-accent-pink-dot)] opacity-80" />
             <span className="h-2 w-2 rounded-full bg-[var(--theme-accent-butter-dot)] opacity-80" />
@@ -280,9 +281,9 @@ export const TuxedoCatWidget: FC = () => {
             <span className="truncate">{current.bubble}</span>
           </div>
 
-          <div key={`cat-${stageIndex}-${pokes}`} className={reactionClass}>
+          <div key={`cat-${stageIndex}-${pokes}`} className={`max-w-full overflow-x-auto ${reactionClass}`}>
             <pre
-              className={`m-0 select-none whitespace-pre font-mono text-xs leading-tight sm:text-[13px] ${current.artClass}`}
+              className={`m-0 select-none whitespace-pre font-mono text-xs leading-snug sm:text-[13px] ${current.artClass}`}
               aria-hidden="true"
             >
               {activeAscii}
@@ -300,7 +301,13 @@ export const TuxedoCatWidget: FC = () => {
           </div>
           <div className="mt-0.5 flex items-center text-[var(--theme-ink-legend)]">
             <span>kueno@tty:~$&nbsp;</span>
-            <span className="tty-cursor text-[var(--theme-accent-mint)]" aria-hidden="true">
+            <span
+              key={`cursor-${pokes}`}
+              className={`${
+                showPokeCursor ? 'tty-cursor ' : 'opacity-75 '
+              }text-[var(--theme-accent-mint)]`}
+              aria-hidden="true"
+            >
               █
             </span>
           </div>

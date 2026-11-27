@@ -1,73 +1,22 @@
-import type { FC, KeyboardEvent } from 'react';
+import type { FC } from 'react';
 import {
   LuArrowUpRight,
-  LuCpu,
   LuExpand,
   LuGithub,
-  LuSmartphone,
-  LuTerminal,
 } from 'react-icons/lu';
-import { projectsData, type ProjectAccent, type ProjectItem } from '../data/projects';
+import { projectsData, type ProjectItem } from '../data/projects';
+import {
+  accentBadgeStyles,
+  accentDotStyles,
+  renderProjectIcon,
+} from '../utils/projectThemeUtils';
 import { SectionHeader } from './SectionHeader';
-
-const accentBadgeStyles: Record<ProjectAccent, string> = {
-  butter:
-    'border-[var(--theme-accent-butter-border)] bg-[var(--theme-accent-butter-bg)] text-[var(--theme-accent-butter)]',
-  mint: 'border-[var(--theme-accent-mint-border)] bg-[var(--theme-accent-mint-bg)] text-[var(--theme-accent-mint)]',
-  pink: 'border-[var(--theme-accent-pink-border)] bg-[var(--theme-accent-pink-bg)] text-[var(--theme-accent-pink)]',
-};
-
-const accentDotStyles: Record<ProjectAccent, string> = {
-  butter: 'bg-[var(--theme-accent-butter-dot)]',
-  mint: 'bg-[var(--theme-accent-mint-dot)]',
-  pink: 'bg-[var(--theme-accent-pink-dot)]',
-};
-
-function renderCategoryIcon(id: string) {
-  if (id === 'opspilot') {
-    return (
-      <LuTerminal
-        className="h-4 w-4 text-[var(--theme-accent-butter)]"
-        aria-hidden="true"
-      />
-    );
-  }
-  if (id === 'finnote') {
-    return (
-      <LuSmartphone
-        className="h-4 w-4 text-[var(--theme-accent-mint)]"
-        aria-hidden="true"
-      />
-    );
-  }
-  return (
-    <LuCpu
-      className="h-4 w-4 text-[var(--theme-accent-pink)]"
-      aria-hidden="true"
-    />
-  );
-}
 
 interface ProjectsBentoProps {
   onOpenProject: (project: ProjectItem) => void;
 }
 
 export const ProjectsBento: FC<ProjectsBentoProps> = ({ onOpenProject }) => {
-  const handleCardClick = (project: ProjectItem) => {
-    onOpenProject(project);
-  };
-
-  const handleCardKeyDown = (project: ProjectItem, event: KeyboardEvent<HTMLElement>) => {
-    const target = event.target as HTMLElement | null;
-    if (target && target !== event.currentTarget && target.closest('a, button')) {
-      return;
-    }
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onOpenProject(project);
-    }
-  };
-
   return (
     <section id="projects" className="py-8 sm:py-10">
       <SectionHeader
@@ -81,27 +30,29 @@ export const ProjectsBento: FC<ProjectsBentoProps> = ({ onOpenProject }) => {
           <article
             key={project.id}
             data-project-card-id={project.id}
-            role="button"
-            tabIndex={0}
-            aria-label={`Inspect ${project.title} spec sheet`}
-            onClick={() => handleCardClick(project)}
-            onKeyDown={(e) => handleCardKeyDown(project, e)}
-            className="bento-card group flex cursor-pointer flex-col justify-between p-5 text-left focus-visible:outline-2 focus-visible:outline-[var(--theme-accent-mint)] sm:p-6"
+            className="bento-card group relative flex flex-col justify-between p-5 text-left sm:p-6"
           >
             <div>
               {/* Card Header */}
               <div className="mb-3 flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2.5">
-                  <div className="recessed-well flex h-9 w-9 items-center justify-center rounded-xl">
-                    {renderCategoryIcon(project.id)}
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <div className="recessed-well flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
+                    {renderProjectIcon(project.id, 'h-4 w-4')}
                   </div>
                   <h3 className="font-display text-lg font-bold text-[var(--theme-ink-primary)]">
-                    {project.title}
+                    <button
+                      type="button"
+                      onClick={() => onOpenProject(project)}
+                      aria-label={`Inspect ${project.title} spec sheet`}
+                      className="inline-flex min-h-[44px] cursor-pointer items-center text-left after:absolute after:inset-0 after:z-0 after:rounded-[18px] after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--theme-accent-mint)]"
+                    >
+                      {project.title}
+                    </button>
                   </h3>
                 </div>
 
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-[11px] font-medium ${accentBadgeStyles[project.accent]}`}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-[11px] font-medium ${accentBadgeStyles[project.accent]}`}
                 >
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${accentDotStyles[project.accent]}`}
@@ -150,7 +101,7 @@ export const ProjectsBento: FC<ProjectsBentoProps> = ({ onOpenProject }) => {
                 <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[var(--theme-ink-legend)]">
                   <span>{project.category}</span>
                   <LuExpand
-                    className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100"
+                    className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100 motion-reduce:transition-none"
                     aria-hidden="true"
                   />
                 </span>
@@ -159,9 +110,7 @@ export const ProjectsBento: FC<ProjectsBentoProps> = ({ onOpenProject }) => {
                     href={project.repoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    className="keycap px-3 py-1.5 text-xs text-[var(--theme-ink-primary)] no-underline"
+                    className="keycap relative z-10 min-h-[44px] px-3.5 py-2 text-xs text-[var(--theme-ink-primary)] no-underline sm:min-h-[36px] sm:px-3 sm:py-1.5"
                   >
                     <LuGithub className="h-3.5 w-3.5" aria-hidden="true" />
                     <span>Source</span>

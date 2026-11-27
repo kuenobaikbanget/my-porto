@@ -94,7 +94,7 @@ export const HeroBento: FC = () => {
             <div className="flex flex-wrap items-center gap-2.5">
               <a
                 href="#projects"
-                className="keycap keycap-mint px-4 py-2 text-xs no-underline sm:text-sm"
+                className="keycap keycap-mint min-h-[44px] px-4 py-2.5 text-xs no-underline sm:min-h-[40px] sm:py-2 sm:text-sm"
               >
                 <span>View Projects</span>
                 <LuArrowDownRight className="h-4 w-4" aria-hidden="true" />
@@ -113,18 +113,18 @@ export const HeroBento: FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="GitHub profile"
-                  className="keycap p-2.5 text-[var(--theme-ink-primary)] no-underline"
+                  className="keycap min-h-[44px] min-w-[44px] p-3 text-[var(--theme-ink-primary)] no-underline sm:min-h-[40px] sm:min-w-[40px] sm:p-2.5"
                 >
-                  <LuGithub className="h-4 w-4" />
+                  <LuGithub className="h-4 w-4" aria-hidden="true" />
                 </a>
                 <a
                   href={profileData.socials.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn profile"
-                  className="keycap p-2.5 text-[var(--theme-accent-sky)] no-underline"
+                  className="keycap min-h-[44px] min-w-[44px] p-3 text-[var(--theme-accent-sky)] no-underline sm:min-h-[40px] sm:min-w-[40px] sm:p-2.5"
                 >
-                  <LuLinkedin className="h-4 w-4" />
+                  <LuLinkedin className="h-4 w-4" aria-hidden="true" />
                 </a>
               </div>
             </div>
