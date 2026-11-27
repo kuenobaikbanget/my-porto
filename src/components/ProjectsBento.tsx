@@ -73,7 +73,6 @@ export const ProjectsBento: FC<ProjectsBentoProps> = ({ onOpenProject }) => {
       <SectionHeader
         eyebrow="FEATURED BUILDS"
         title="Featured Projects"
-        subtitle="Self-hosted Linux tooling, offline-first mobile apps, and robotics hardware — click any card for spec sheet."
         accentColor="butter"
       />
 

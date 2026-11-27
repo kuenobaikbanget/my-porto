@@ -2,6 +2,7 @@ import { useEffect, useState, type FC, type MouseEvent } from 'react';
 import { LuCommand, LuMenu, LuMoon, LuSun, LuX } from 'react-icons/lu';
 import { useTheme } from '../context/useTheme';
 import { profileData } from '../data/profile';
+import { LogoMark } from './LogoMark';
 
 const navLinks = [
   { id: 'activity', label: 'Activity' },
@@ -68,8 +69,9 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
         <div className="flex items-center gap-2.5">
           <a
             href="#hero"
-            className="keycap px-3 py-1.5 text-xs tracking-wide text-[var(--theme-ink-primary)] no-underline"
+            className="keycap flex items-center gap-2 px-3 py-1.5 text-xs tracking-wide text-[var(--theme-ink-primary)] no-underline"
           >
+            <LogoMark className="h-4 w-4 shrink-0 text-[var(--theme-ink-primary)]" />
             <span className="font-semibold text-[var(--theme-accent-pink)]">
               {profileData.handle}
             </span>

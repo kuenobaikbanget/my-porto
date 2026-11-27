@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><title>kueno — tuxedo cat mark</title><g transform="translate(-57.09 -60.76) scale(1.446)">
+  
+  <desc>Simplified cut for 16–32 px: no inner-ear holes, slightly larger eyes/nose so the face survives tiny sizes.</desc>
+  <path fill="#170e1f" fill-rule="evenodd" d="
+    M 62 92
+    L 80 42
+    L 114 88
+    Q 128 100 142 88
+    L 176 42
+    L 194 92
+    Q 212 92 212 112
+    L 212 176
+    Q 212 212 176 212
+    L 80 212
+    Q 44 212 44 176
+    L 44 112
+    Q 44 92 62 92
+    Z
+    M 82 126 h 30 v 30 h -30 Z
+    M 144 126 h 30 v 30 h -30 Z
+    M 118 166 L 138 166 L 128 181 Z
+  "/>
+</g></svg>
