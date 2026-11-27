@@ -17,7 +17,7 @@ export const HeroBento: FC = () => {
         {/* Primary Identity & Recruiter Scan Card */}
         <div className="bento-card flex flex-col justify-between p-5 sm:p-7 lg:col-span-8">
           <div>
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-3.5">
                 <div className="shrink-0 rounded-2xl border border-[var(--theme-border-strong)] bg-[var(--theme-well)] p-1 shadow-[0_3px_0_var(--theme-bevel)]">
                   <img
@@ -38,9 +38,30 @@ export const HeroBento: FC = () => {
                 </div>
               </div>
 
-              <div className="recessed-well inline-flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-xs text-[var(--theme-accent-butter)]">
-                <span className="text-[var(--theme-ink-legend)]">GPA</span>
-                <span className="font-semibold">{profileData.gpa}</span>
+              <div className="group/gpa relative shrink-0 self-start">
+                <button
+                  type="button"
+                  aria-describedby="gpa-still-going-tooltip"
+                  className="recessed-well inline-flex cursor-default items-center gap-2 rounded-xl px-3.5 py-2 font-mono text-xs tabular-nums text-[var(--theme-accent-butter)] transition-colors duration-150 hover:border-[var(--theme-accent-butter-border)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent-butter)]"
+                >
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--theme-accent-butter-dot)]"
+                    aria-hidden="true"
+                  />
+                  <span className="text-[11px] font-medium tracking-wider text-[var(--theme-ink-legend)]">
+                    GPA
+                  </span>
+                  <span className="font-semibold tracking-tight">{profileData.gpa}</span>
+                </button>
+
+                <div
+                  id="gpa-still-going-tooltip"
+                  role="tooltip"
+                  className="gpa-popup pointer-events-none absolute right-0 top-[calc(100%+10px)] z-30 whitespace-nowrap rounded-xl border border-[var(--theme-accent-butter-border)] bg-[var(--theme-keycap)] px-3 py-1.5 font-mono text-[11px] font-medium text-[var(--theme-accent-butter)] shadow-[0_3px_0_var(--theme-bevel),0_10px_24px_var(--theme-popover-shadow)]"
+                >
+                  <span className="gpa-popup-caret" aria-hidden="true" />
+                  and still going, insyallah wallahi
+                </div>
               </div>
             </div>
 

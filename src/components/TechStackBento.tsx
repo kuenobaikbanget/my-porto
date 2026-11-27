@@ -144,7 +144,6 @@ export const TechStackBento: FC = () => {
       <SectionHeader
         eyebrow="KEYCAP MATRIX"
         title="Tech Toolbox"
-        subtitle="Tools I ship and maintain systems with — organized as tactile keycaps."
         accentColor="mint"
       />
 
