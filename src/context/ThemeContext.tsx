@@ -7,38 +7,38 @@ import {
   type WipeOrigin,
 } from './themeContextDef';
 
-function isValidTheme(value: unknown): value is ThemeId {
-  return value === 'digital-nightmares' || value === 'analog-dreams';
+function normalizeStoredTheme(value: unknown): ThemeId | null {
+  if (value === 'dark' || value === 'light') return value;
+  if (typeof value === 'string' && value.startsWith('analog')) return 'light';
+  if (typeof value === 'string' && value.startsWith('digital')) return 'dark';
+  return null;
 }
 
 function getInitialTheme(): ThemeId {
   if (typeof document !== 'undefined') {
-    const fromAttr = document.documentElement.dataset.theme;
-    if (isValidTheme(fromAttr)) return fromAttr;
+    const fromAttr = normalizeStoredTheme(document.documentElement.dataset.theme);
+    if (fromAttr) return fromAttr;
   }
   if (typeof window !== 'undefined') {
     try {
-      const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-      if (isValidTheme(stored)) return stored;
+      const stored = normalizeStoredTheme(window.localStorage.getItem(THEME_STORAGE_KEY));
+      if (stored) return stored;
     } catch {
       // Ignore storage access errors
     }
   }
-  return 'digital-nightmares';
+  return 'dark';
 }
 
 function applyThemeToDocument(theme: ThemeId): void {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
   root.dataset.theme = theme;
-  root.style.colorScheme = theme === 'analog-dreams' ? 'light' : 'dark';
+  root.style.colorScheme = theme;
 
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
   if (metaThemeColor) {
-    metaThemeColor.setAttribute(
-      'content',
-      theme === 'analog-dreams' ? '#f3efe7' : '#170e1f',
-    );
+    metaThemeColor.setAttribute('content', theme === 'light' ? '#f3efe7' : '#170e1f');
   }
 }
 
@@ -118,10 +118,7 @@ export const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const toggleTheme = useCallback(
     (origin?: WipeOrigin) => {
-      setTheme(
-        theme === 'digital-nightmares' ? 'analog-dreams' : 'digital-nightmares',
-        origin,
-      );
+      setTheme(theme === 'dark' ? 'light' : 'dark', origin);
     },
     [setTheme, theme],
   );

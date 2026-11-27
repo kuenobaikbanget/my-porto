@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-export type ThemeId = 'digital-nightmares' | 'analog-dreams';
+export type ThemeId = 'dark' | 'light';
 
 export interface WipeOrigin {
   x: number;

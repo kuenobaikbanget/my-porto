@@ -42,16 +42,16 @@ const categoryAccentDot: Record<Exclude<SkillCategoryKey, 'all'>, string> = {
 };
 
 const categoryAccentHexByTheme: Record<
-  'digital-nightmares' | 'analog-dreams',
+  'dark' | 'light',
   Record<Exclude<SkillCategoryKey, 'all'>, string>
 > = {
-  'digital-nightmares': {
+  dark: {
     iot: '#f3e6a2',
     linux: '#cfe0f2',
     dev: '#c6e3d1',
     security: '#eed2df',
   },
-  'analog-dreams': {
+  light: {
     iot: '#725209',
     linux: '#2d5582',
     dev: '#166852',

@@ -7,7 +7,7 @@
 }
 
 :root,
-[data-theme="digital-nightmares"] {
+[data-theme="dark"] {
   color-scheme: dark;
 
   --theme-canvas: #170e1f;
@@ -84,7 +84,7 @@
   --theme-led-4-glow: 0 0 6px rgba(198, 227, 209, 0.48);
 }
 
-[data-theme="analog-dreams"] {
+[data-theme="light"] {
   color-scheme: light;
 
   --theme-canvas: #f3efe7;

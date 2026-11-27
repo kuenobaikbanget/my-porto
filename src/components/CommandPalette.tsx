@@ -39,20 +39,6 @@ interface TerminalOutputBlock {
   lines: string[];
 }
 
-function getWibTimestamp(): string {
-  try {
-    return new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Asia/Jakarta',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).format(new Date());
-  } catch {
-    return '--:--:--';
-  }
-}
-
 export const CommandPalette: FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
@@ -68,7 +54,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
   const copyTimerRef = useRef<number | null>(null);
   const { theme, toggleTheme } = useTheme();
 
-  const isAnalog = theme === 'analog-dreams';
+  const isLight = theme === 'light';
 
   useEffect(() => {
     return () => {
@@ -157,12 +143,12 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     }
 
     if (cmd === 'theme') {
-      const nextName = isAnalog ? 'Digital Nightmares' : 'Analog Dreams';
+      const nextName = isLight ? 'Dark' : 'Light';
       toggleTheme({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
       setTerminalOutput({
         command: 'theme --toggle',
         tone: 'pink',
-        lines: [`[OK] Colorway wiped -> ${nextName}`],
+        lines: [`[OK] Theme switched -> ${nextName}`],
       });
       setQuery('');
       return;
@@ -190,8 +176,8 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
         lines: [
           `acad   : 3rd-Year Undergraduate · Active in KSM Robotics`,
           `work   : ${profileData.statusLabel}`,
-          `time   : ${getWibTimestamp()} WIB (Asia/Jakarta)`,
-          `theme  : ${isAnalog ? 'Analog Dreams (light)' : 'Digital Nightmares (dark)'}`,
+          `loc    : ${profileData.location}`,
+          `theme  : ${isLight ? 'Light' : 'Dark'}`,
         ],
       });
       setQuery('');
@@ -235,10 +221,10 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
         lines: [
           'Available terminal commands:',
           '  whoami   identity, academic track & focus areas',
-          '  status   live WIB clock, KSM Robotics & internship status',
+          '  status   academic standing, KSM Robotics & internship role',
           '  ping     latency check to kueno.web.id',
           '  cat      inspect the deskmat tuxedo cat process',
-          '  theme    toggle Digital Nightmares <-> Analog Dreams',
+          '  theme    toggle Dark <-> Light theme',
           '  clear    clear terminal output',
         ],
       });
@@ -276,9 +262,9 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
       {
         id: 'nav-activity',
         group: 'Navigate',
-        label: 'Jump to Activity & Desk Status',
+        label: 'Jump to GitHub Activity',
         hint: '#activity',
-        keywords: 'activity github led matrix clock wib desk status',
+        keywords: 'activity github led matrix contributions',
         run: () => jumpTo('activity'),
       },
       {
@@ -325,13 +311,11 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
 
     const actionItems: PaletteItem[] = [
       {
-        id: 'action-colorway',
+        id: 'action-theme',
         group: 'Action',
-        label: isAnalog
-          ? 'Switch Colorway -> Digital Nightmares'
-          : 'Switch Colorway -> Analog Dreams',
+        label: isLight ? 'Switch Theme -> Dark' : 'Switch Theme -> Light',
         hint: 'radial wipe',
-        keywords: 'theme colorway dark light digital nightmares analog dreams switch',
+        keywords: 'theme dark light appearance switch toggle',
         run: () => {
           toggleTheme({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
           onClose();
@@ -384,7 +368,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     }));
 
     return [...actionItems, ...projectItems, ...navItems];
-  }, [copiedNotice, isAnalog, onClose, onOpenProject, toggleTheme]);
+  }, [copiedNotice, isLight, onClose, onOpenProject, toggleTheme]);
 
   const filteredItems = useMemo(() => {
     const items: PaletteItem[] = [];
@@ -460,7 +444,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     if (item.group === 'Project Spec') {
       return <LuFileCode2 className="h-3.5 w-3.5 text-[var(--theme-accent-butter)]" aria-hidden="true" />;
     }
-    if (item.id === 'action-colorway') {
+    if (item.id === 'action-theme') {
       return <LuPalette className="h-3.5 w-3.5 text-[var(--theme-accent-pink)]" aria-hidden="true" />;
     }
     if (item.id === 'action-copy-email') {

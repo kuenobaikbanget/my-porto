@@ -21,7 +21,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
-  const isAnalog = theme === 'analog-dreams';
+  const isLight = theme === 'light';
 
   useEffect(() => {
     const sections = ['hero', ...navLinks.map((l) => l.id)]
@@ -53,7 +53,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const handleToggleColorway = (event: MouseEvent<HTMLButtonElement>) => {
+  const handleToggleTheme = (event: MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const hasPointerCoords = event.clientX !== 0 || event.clientY !== 0;
     toggleTheme({
@@ -112,20 +112,14 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handleToggleColorway}
-            aria-label={
-              isAnalog
-                ? 'Switch colorway to Digital Nightmares (dark)'
-                : 'Switch colorway to Analog Dreams (light)'
-            }
+            onClick={handleToggleTheme}
+            aria-label={isLight ? 'Switch theme to Dark' : 'Switch theme to Light'}
             title={
-              isAnalog
-                ? 'Colorway: Analog Dreams — Click for Digital Nightmares'
-                : 'Colorway: Digital Nightmares — Click for Analog Dreams'
+              isLight ? 'Theme: Light — Click for Dark' : 'Theme: Dark — Click for Light'
             }
             className="keycap px-2.5 py-1.5 text-xs text-[var(--theme-ink-primary)]"
           >
-            {isAnalog ? (
+            {isLight ? (
               <LuSun
                 className="h-3.5 w-3.5 text-[var(--theme-accent-butter)]"
                 aria-hidden="true"
@@ -136,10 +130,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
                 aria-hidden="true"
               />
             )}
-            <span className="hidden sm:inline">
-              {isAnalog ? 'Dreams' : 'Nightmares'}
-            </span>
-            <span className="sm:hidden">{isAnalog ? 'AD' : 'DN'}</span>
+            <span>{isLight ? 'Light' : 'Dark'}</span>
           </button>
 
           <button

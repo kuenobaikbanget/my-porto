@@ -24,7 +24,7 @@ export const hobbiesData: HobbyCategory[] = [
   {
     key: 'keyboards',
     label: 'Keyboards',
-    note: 'Custom mechanical boards, tactile switches, and GMK-inspired colorway setups.',
+    note: 'Custom mechanical boards, tactile switches, and custom keycap colorway setups.',
     images: collectImages('hobikeyboard', 'Mechanical keyboard'),
   },
   {
