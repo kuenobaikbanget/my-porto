@@ -303,8 +303,7 @@ export const TuxedoCatWidget: FC = () => {
       </button>
 
       {/* Bottom Deskmat Tag */}
-      <div className="flex items-center justify-between font-mono text-[11px] text-[#b9a7c9]">
-        <span>Tuxedo Desk Companion</span>
+      <div className="flex items-center justify-end font-mono text-[11px]">
         <span className="text-[#8e71a2]">click</span>
       </div>
     </div>

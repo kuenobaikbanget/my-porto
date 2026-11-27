@@ -116,7 +116,7 @@ export const ExperienceBento: FC = () => {
           </div>
 
           <div className="recessed-well mt-5 rounded-xl px-3 py-2.5 font-mono text-[11px] text-[#c6e3d1]">
-            Status: 3rd-Year Undergraduate · Active in Robotics &amp; Systems
+            Status: 3rd-Year Undergraduate · Active in KSM Robotics
           </div>
         </article>
       </div>
