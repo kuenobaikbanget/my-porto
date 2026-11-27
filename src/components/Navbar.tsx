@@ -3,21 +3,36 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type FC,
   type MouseEvent,
 } from 'react';
-import { LuCommand, LuMenu, LuMoon, LuSun, LuX } from 'react-icons/lu';
+import {
+  LuActivity,
+  LuBriefcase,
+  LuCommand,
+  LuCpu,
+  LuFolderKanban,
+  LuHouse,
+  LuKeyboard,
+  LuMail,
+  LuMenu,
+  LuMoon,
+  LuSun,
+  LuX,
+} from 'react-icons/lu';
 import { useTheme } from '../context/useTheme';
 import { profileData } from '../data/profile';
 import { LogoMark } from './LogoMark';
 
 const navLinks = [
-  { id: 'activity', label: 'Activity' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'stack', label: 'Toolbox' },
-  { id: 'hobbies', label: 'Bench' },
-  { id: 'contact', label: 'Contact' },
+  { id: 'hero', label: 'Overview', Icon: LuHouse },
+  { id: 'activity', label: 'Activity', Icon: LuActivity },
+  { id: 'projects', label: 'Projects', Icon: LuFolderKanban },
+  { id: 'experience', label: 'Experience', Icon: LuBriefcase },
+  { id: 'stack', label: 'Toolbox', Icon: LuCpu },
+  { id: 'hobbies', label: 'Bench', Icon: LuKeyboard },
+  { id: 'contact', label: 'Contact', Icon: LuMail },
 ] as const;
 
 interface NavbarProps {
@@ -25,17 +40,17 @@ interface NavbarProps {
 }
 
 interface PillRect {
-  x: number;
-  width: number;
+  y: number;
+  height: number;
 }
 
 interface SpringState {
-  x: number;
-  vx: number;
-  width: number;
-  vw: number;
-  targetX: number;
-  targetWidth: number;
+  y: number;
+  vy: number;
+  height: number;
+  vh: number;
+  targetY: number;
+  targetHeight: number;
   initialized: boolean;
 }
 
@@ -53,12 +68,12 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   const scrollLockRef = useRef<string | null>(null);
   const scrollLockTimerRef = useRef<number | null>(null);
   const springRef = useRef<SpringState>({
-    x: 0,
-    vx: 0,
-    width: 0,
-    vw: 0,
-    targetX: 0,
-    targetWidth: 0,
+    y: 0,
+    vy: 0,
+    height: 0,
+    vh: 0,
+    targetY: 0,
+    targetHeight: 0,
     initialized: false,
   });
 
@@ -71,20 +86,20 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
     if (!rail || !el) return null;
     const railRect = rail.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
-    if (elRect.width === 0) return null;
+    if (elRect.height === 0) return null;
     return {
-      x: elRect.left - railRect.left,
-      width: elRect.width,
+      y: elRect.top - railRect.top - rail.clientTop,
+      height: elRect.height,
     };
   }, []);
 
   const applyStabilizerTransform = useCallback(
-    (x: number, width: number, velocityX: number) => {
+    (y: number, height: number, velocityY: number) => {
       const node = stabilizerRef.current;
       if (!node) return;
-      const stretch = Math.min(Math.abs(velocityX) * 0.00014, 0.05);
-      node.style.width = `${width}px`;
-      node.style.transform = `translate3d(${x}px, 0, 0) scaleX(${1 + stretch})`;
+      const stretch = Math.min(Math.abs(velocityY) * 0.00014, 0.06);
+      node.style.height = `${height}px`;
+      node.style.transform = `translate3d(0, ${y}px, 0) scaleY(${1 + stretch})`;
     },
     [],
   );
@@ -96,16 +111,16 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      state.targetX = target.x;
-      state.targetWidth = target.width;
+      state.targetY = target.y;
+      state.targetHeight = target.height;
 
       if (!state.initialized || immediate || reduceMotion) {
-        state.x = target.x;
-        state.width = target.width;
-        state.vx = 0;
-        state.vw = 0;
+        state.y = target.y;
+        state.height = target.height;
+        state.vy = 0;
+        state.vh = 0;
         state.initialized = true;
-        applyStabilizerTransform(state.x, state.width, 0);
+        applyStabilizerTransform(state.y, state.height, 0);
         return;
       }
 
@@ -119,34 +134,34 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
         const dt = Math.min((now - lastTime) / 1000, 0.032);
         lastTime = now;
 
-        const dx = state.targetX - state.x;
-        const dw = state.targetWidth - state.width;
+        const dy = state.targetY - state.y;
+        const dh = state.targetHeight - state.height;
 
-        const ax = stiffness * dx - damping * state.vx;
-        const aw = stiffness * dw - damping * state.vw;
+        const ay = stiffness * dy - damping * state.vy;
+        const ah = stiffness * dh - damping * state.vh;
 
-        state.vx += ax * dt;
-        state.vw += aw * dt;
-        state.x += state.vx * dt;
-        state.width += state.vw * dt;
+        state.vy += ay * dt;
+        state.vh += ah * dt;
+        state.y += state.vy * dt;
+        state.height += state.vh * dt;
 
         const settled =
-          Math.abs(dx) < 0.2 &&
-          Math.abs(dw) < 0.2 &&
-          Math.abs(state.vx) < 0.5 &&
-          Math.abs(state.vw) < 0.5;
+          Math.abs(dy) < 0.2 &&
+          Math.abs(dh) < 0.2 &&
+          Math.abs(state.vy) < 0.5 &&
+          Math.abs(state.vh) < 0.5;
 
         if (settled) {
-          state.x = state.targetX;
-          state.width = state.targetWidth;
-          state.vx = 0;
-          state.vw = 0;
-          applyStabilizerTransform(state.x, state.width, 0);
+          state.y = state.targetY;
+          state.height = state.targetHeight;
+          state.vy = 0;
+          state.vh = 0;
+          applyStabilizerTransform(state.y, state.height, 0);
           rafRef.current = null;
           return;
         }
 
-        applyStabilizerTransform(state.x, state.width, state.vx);
+        applyStabilizerTransform(state.y, state.height, state.vy);
         rafRef.current = window.requestAnimationFrame(tick);
       };
 
@@ -211,7 +226,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
 
   // Deterministic scroll-spy that respects click-lock and reliably reaches Contact at page bottom
   useEffect(() => {
-    const sectionIds = ['hero', ...navLinks.map((l) => l.id)];
+    const sectionIds = navLinks.map((l) => l.id);
     const supportsScrollTimeline =
       typeof CSS !== 'undefined' &&
       typeof CSS.supports === 'function' &&
@@ -226,7 +241,9 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
       const maxScroll = Math.max(docEl.scrollHeight - window.innerHeight, 0);
 
       if (!supportsScrollTimeline) {
-        setScrollProgress(maxScroll > 0 ? Math.min(Math.max(window.scrollY / maxScroll, 0), 1) : 0);
+        setScrollProgress(
+          maxScroll > 0 ? Math.min(Math.max(window.scrollY / maxScroll, 0), 1) : 0,
+        );
       }
 
       if (scrollLockRef.current !== null) {
@@ -312,8 +329,8 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
     const rect = el.getBoundingClientRect();
     const relX = (event.clientX - rect.left) / rect.width - 0.5;
     const relY = (event.clientY - rect.top) / rect.height - 0.5;
-    el.style.setProperty('--mag-x', `${(relX * 3.5).toFixed(2)}px`);
-    el.style.setProperty('--mag-y', `${(relY * 2).toFixed(2)}px`);
+    el.style.setProperty('--mag-x', `${(relX * 2.5).toFixed(2)}px`);
+    el.style.setProperty('--mag-y', `${(relY * 2.5).toFixed(2)}px`);
   };
 
   const handleLinkMouseLeave = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -322,9 +339,9 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--theme-border)] bg-[var(--theme-header-bg)] backdrop-blur-md">
-      <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-2 px-4 py-2 sm:gap-3 sm:px-6">
-        <div className="flex min-w-0 items-center gap-2.5">
+    <>
+      <header className="sticky top-0 z-40 border-b border-[var(--theme-border)] bg-[var(--theme-header-bg)] backdrop-blur-md">
+        <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-2 px-4 py-2 sm:gap-3 sm:px-6">
           <a
             href="#hero"
             onClick={() => lockActiveTo('hero')}
@@ -336,172 +353,162 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
             </span>
           </a>
 
-          {/* Windowed LED status badge */}
-          <div
-            className="recessed-well hidden min-w-0 items-center gap-2 rounded-full px-3 py-1 xl:inline-flex xl:max-w-[240px] 2xl:max-w-[300px]"
-            title={profileData.statusLabel}
-          >
-            <span
-              className="h-2 w-2 shrink-0 rounded-full bg-[var(--theme-accent-mint-dot)] ring-2 ring-[var(--theme-accent-mint-border)]"
-              aria-hidden="true"
-            />
-            <span className="truncate font-mono text-[11px] font-medium text-[var(--theme-accent-mint)]">
-              {profileData.statusLabel}
-            </span>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={handleToggleTheme}
+              aria-label={isLight ? 'Switch theme to Dark' : 'Switch theme to Light'}
+              title={
+                isLight
+                  ? 'Theme: Light — Click for Dark'
+                  : 'Theme: Dark — Click for Light'
+              }
+              className="keycap min-h-[44px] min-w-[44px] px-3 py-2 text-xs text-[var(--theme-ink-primary)] sm:min-h-[38px] sm:px-2.5 sm:py-1.5"
+            >
+              {isLight ? (
+                <LuSun
+                  className="h-3.5 w-3.5 text-[var(--theme-accent-butter)]"
+                  aria-hidden="true"
+                />
+              ) : (
+                <LuMoon
+                  className="h-3.5 w-3.5 text-[var(--theme-accent-pink)]"
+                  aria-hidden="true"
+                />
+              )}
+              <span>{isLight ? 'Light' : 'Dark'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenPalette}
+              aria-label="Open terminal command palette (Ctrl+K or Cmd+K)"
+              title="Command Palette (⌘K / Ctrl+K)"
+              className="keycap min-h-[44px] min-w-[44px] px-3 py-2 text-xs text-[var(--theme-accent-mint)] sm:min-h-[38px] sm:px-2.5 sm:py-1.5"
+            >
+              <LuCommand className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>K</span>
+            </button>
+
+            <button
+              type="button"
+              className="keycap min-h-[44px] min-w-[44px] p-2.5 text-[var(--theme-ink-primary)] md:hidden"
+              aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((prev) => !prev)}
+            >
+              {menuOpen ? (
+                <LuX className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <LuMenu className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Recessed Mechanical Switch Rail with Spring Stabilizer & Scroll LED */}
-        <nav
-          ref={railRef}
-          className="switch-rail hidden shrink-0 md:inline-flex"
-          aria-label="Primary navigation"
-          onMouseLeave={() => setHoverRect(null)}
-        >
-          {/* Hover preview plate */}
+        {menuOpen ? (
+          <nav
+            className="border-t border-[var(--theme-border)] bg-[var(--theme-housing)] px-4 py-3 md:hidden"
+            aria-label="Mobile navigation"
+          >
+            <div className="grid grid-cols-2 gap-2">
+              {navLinks.map(({ id, label, Icon }) => {
+                const isActive = activeId === id;
+                return (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    aria-current={isActive ? 'location' : undefined}
+                    onClick={() => {
+                      lockActiveTo(id);
+                      setMenuOpen(false);
+                    }}
+                    className={`keycap min-h-[44px] px-3 py-2.5 text-xs no-underline ${
+                      isActive
+                        ? 'border-[var(--theme-ink-legend)] bg-[var(--theme-keycap-active)] text-[var(--theme-accent-butter)]'
+                        : 'text-[var(--theme-ink-primary)]'
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span>{label}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </nav>
+        ) : null}
+      </header>
+
+      {/* Fixed Right-Edge Vertical Icon Switch Rail */}
+      <nav
+        ref={railRef}
+        className="switch-rail fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 md:inline-flex xl:right-5"
+        aria-label="Primary navigation"
+        onMouseLeave={() => setHoverRect(null)}
+      >
+        {/* Hover preview plate */}
+        <div
+          aria-hidden="true"
+          className="switch-hover-pill"
+          style={{
+            opacity: hoverRect ? 1 : 0,
+            height: hoverRect ? `${hoverRect.height}px` : '0px',
+            transform: hoverRect
+              ? `translate3d(0, ${hoverRect.y}px, 0)`
+              : 'translate3d(0, 0, 0)',
+          }}
+        />
+
+        {/* Spring-physics active stabilizer */}
+        <div
+          ref={stabilizerRef}
+          aria-hidden="true"
+          className="switch-stabilizer"
+          style={{
+            opacity: hasActiveNav ? 1 : 0,
+          }}
+        />
+
+        {navLinks.map(({ id, label, Icon }) => {
+          const isActive = activeId === id;
+          return (
+            <a
+              key={id}
+              ref={(node) => {
+                linkRefs.current[id] = node;
+              }}
+              href={`#${id}`}
+              aria-label={label}
+              aria-current={isActive ? 'location' : undefined}
+              onClick={() => lockActiveTo(id)}
+              onMouseEnter={() => {
+                const rect = measureLink(id);
+                if (rect) setHoverRect(rect);
+              }}
+              onMouseMove={handleLinkMouseMove}
+              onMouseLeave={handleLinkMouseLeave}
+              className={`switch-key ${
+                isActive
+                  ? 'text-[var(--theme-accent-butter)]'
+                  : 'text-[var(--theme-ink-muted)] hover:text-[var(--theme-ink-primary)]'
+              }`}
+            >
+              <Icon className="h-[17px] w-[17px] shrink-0" aria-hidden="true" />
+              <span className="switch-tooltip" role="tooltip">
+                {label}
+              </span>
+            </a>
+          );
+        })}
+
+        {/* Vertical scroll-driven LED progress filament */}
+        <div className="switch-rail-led-track" aria-hidden="true">
           <div
-            aria-hidden="true"
-            className="switch-hover-pill"
-            style={{
-              opacity: hoverRect ? 1 : 0,
-              width: hoverRect ? `${hoverRect.width}px` : '0px',
-              transform: hoverRect
-                ? `translate3d(${hoverRect.x}px, 0, 0)`
-                : 'translate3d(0, 0, 0)',
-            }}
+            className="switch-rail-led-fill"
+            style={{ '--scroll-progress': scrollProgress } as CSSProperties}
           />
-
-          {/* Spring-physics active stabilizer */}
-          <div
-            ref={stabilizerRef}
-            aria-hidden="true"
-            className="switch-stabilizer"
-            style={{
-              opacity: hasActiveNav ? 1 : 0,
-            }}
-          />
-
-          {navLinks.map((link) => {
-            const isActive = activeId === link.id;
-            return (
-              <a
-                key={link.id}
-                ref={(node) => {
-                  linkRefs.current[link.id] = node;
-                }}
-                href={`#${link.id}`}
-                aria-current={isActive ? 'location' : undefined}
-                onClick={() => lockActiveTo(link.id)}
-                onMouseEnter={() => {
-                  const rect = measureLink(link.id);
-                  if (rect) setHoverRect(rect);
-                }}
-                onMouseMove={handleLinkMouseMove}
-                onMouseLeave={handleLinkMouseLeave}
-                className={`switch-key lg:px-3 ${
-                  isActive
-                    ? 'text-[var(--theme-accent-butter)]'
-                    : 'text-[var(--theme-ink-muted)] hover:text-[var(--theme-ink-primary)]'
-                }`}
-              >
-                <span>{link.label}</span>
-              </a>
-            );
-          })}
-
-          {/* Scroll-driven LED progress filament */}
-          <div className="switch-rail-led-track" aria-hidden="true">
-            <div
-              className="switch-rail-led-fill"
-              style={{ '--scroll-progress': scrollProgress } as React.CSSProperties}
-            />
-          </div>
-        </nav>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={handleToggleTheme}
-            aria-label={isLight ? 'Switch theme to Dark' : 'Switch theme to Light'}
-            title={
-              isLight ? 'Theme: Light — Click for Dark' : 'Theme: Dark — Click for Light'
-            }
-            className="keycap min-h-[44px] min-w-[44px] px-3 py-2 text-xs text-[var(--theme-ink-primary)] sm:min-h-[38px] sm:px-2.5 sm:py-1.5"
-          >
-            {isLight ? (
-              <LuSun
-                className="h-3.5 w-3.5 text-[var(--theme-accent-butter)]"
-                aria-hidden="true"
-              />
-            ) : (
-              <LuMoon
-                className="h-3.5 w-3.5 text-[var(--theme-accent-pink)]"
-                aria-hidden="true"
-              />
-            )}
-            <span>{isLight ? 'Light' : 'Dark'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenPalette}
-            aria-label="Open terminal command palette (Ctrl+K or Cmd+K)"
-            title="Command Palette (⌘K / Ctrl+K)"
-            className="keycap min-h-[44px] min-w-[44px] px-3 py-2 text-xs text-[var(--theme-accent-mint)] sm:min-h-[38px] sm:px-2.5 sm:py-1.5"
-          >
-            <LuCommand className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>K</span>
-          </button>
-
-          <button
-            type="button"
-            className="keycap min-h-[44px] min-w-[44px] p-2.5 text-[var(--theme-ink-primary)] md:hidden"
-            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((prev) => !prev)}
-          >
-            {menuOpen ? <LuX className="h-4 w-4" aria-hidden="true" /> : <LuMenu className="h-4 w-4" aria-hidden="true" />}
-          </button>
         </div>
-      </div>
-
-      {menuOpen ? (
-        <nav
-          className="border-t border-[var(--theme-border)] bg-[var(--theme-housing)] px-4 py-3 md:hidden"
-          aria-label="Mobile navigation"
-        >
-          <div className="recessed-well mb-3 flex items-center gap-2 rounded-lg px-3 py-2 font-mono text-[11px] text-[var(--theme-accent-mint)]">
-            <span
-              className="h-2 w-2 shrink-0 rounded-full bg-[var(--theme-accent-mint-dot)]"
-              aria-hidden="true"
-            />
-            <span>{profileData.statusLabel}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {navLinks.map((link) => {
-              const isActive = activeId === link.id;
-              return (
-                <a
-                  key={link.id}
-                  href={`#${link.id}`}
-                  aria-current={isActive ? 'location' : undefined}
-                  onClick={() => {
-                    lockActiveTo(link.id);
-                    setMenuOpen(false);
-                  }}
-                  className={`keycap min-h-[44px] px-3 py-2.5 text-xs no-underline ${
-                    isActive
-                      ? 'border-[var(--theme-ink-legend)] bg-[var(--theme-keycap-active)] text-[var(--theme-accent-butter)]'
-                      : 'text-[var(--theme-ink-primary)]'
-                  }`}
-                >
-                  {link.label}
-                </a>
-              );
-            })}
-          </div>
-        </nav>
-      ) : null}
-    </header>
+      </nav>
+    </>
   );
 };

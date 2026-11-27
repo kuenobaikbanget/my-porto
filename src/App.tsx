@@ -63,7 +63,7 @@ function App() {
       </a>
 
       <Navbar onOpenPalette={openPalette} />
-      <main id="main-content" className="mx-auto max-w-6xl px-4 sm:px-6">
+      <main id="main-content" className="mx-auto max-w-6xl px-4 sm:px-6 md:pr-20 xl:pr-6">
         <HeroBento />
         <ActivityStatusBento />
         <ProjectsBento onOpenProject={handleOpenProject} />
