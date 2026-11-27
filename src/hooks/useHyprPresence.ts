@@ -6,7 +6,7 @@ interface HyprPresenceResult<T> {
   displayValue: T | null;
 }
 
-const DEFAULT_EXIT_MS = 175;
+const DEFAULT_EXIT_MS = 230;
 
 function prefersReducedMotion(): boolean {
   return (
@@ -28,6 +28,7 @@ export function useHyprPresence<T>(
     value ? value : null,
   );
   const [isExiting, setIsExiting] = useState(false);
+  const cachedRef = useRef<T | null>(value ? value : null);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -37,16 +38,18 @@ export function useHyprPresence<T>(
     }
 
     if (value) {
+      cachedRef.current = value;
       setCachedValue(value);
       setIsExiting(false);
       return;
     }
 
-    if (!cachedValue) {
+    if (!cachedRef.current) {
       return;
     }
 
     if (prefersReducedMotion()) {
+      cachedRef.current = null;
       setCachedValue(null);
       setIsExiting(false);
       return;
@@ -54,6 +57,7 @@ export function useHyprPresence<T>(
 
     setIsExiting(true);
     timerRef.current = window.setTimeout(() => {
+      cachedRef.current = null;
       setCachedValue(null);
       setIsExiting(false);
       timerRef.current = null;
@@ -65,13 +69,21 @@ export function useHyprPresence<T>(
         timerRef.current = null;
       }
     };
-  }, [value, cachedValue, exitDurationMs]);
+  }, [value, exitDurationMs]);
 
   if (isOpen && value) {
     return {
       isMounted: true,
       isClosing: false,
       displayValue: value,
+    };
+  }
+
+  if (prefersReducedMotion()) {
+    return {
+      isMounted: false,
+      isClosing: false,
+      displayValue: null,
     };
   }
 

@@ -64,11 +64,11 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--theme-border)] bg-[var(--theme-header-bg)] backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6">
-        <div className="flex items-center gap-2.5">
+      <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 sm:gap-3 sm:px-6">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2.5">
           <a
             href="#hero"
-            className="keycap px-3 py-1.5 text-xs tracking-wide text-[var(--theme-ink-primary)] no-underline"
+            className="keycap min-h-[44px] min-w-[44px] px-3 py-2 text-xs tracking-wide text-[var(--theme-ink-primary)] no-underline sm:min-h-[38px] sm:py-1.5"
           >
             <span className="font-semibold text-[var(--theme-accent-pink)]">
               {profileData.handle}
@@ -77,27 +77,27 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
 
           {/* Windowed LED status badge */}
           <div
-            className="recessed-well hidden max-w-[250px] shrink-0 items-center gap-2 rounded-full px-3 py-1 xl:inline-flex 2xl:max-w-none"
+            className="recessed-well hidden min-w-0 max-w-full items-center gap-2 rounded-full px-3 py-1 xl:inline-flex xl:max-w-[380px] 2xl:max-w-none"
             title={profileData.statusLabel}
           >
             <span
               className="h-2 w-2 shrink-0 rounded-full bg-[var(--theme-accent-mint-dot)] ring-2 ring-[var(--theme-accent-mint-border)]"
               aria-hidden="true"
             />
-            <span className="truncate whitespace-nowrap font-mono text-[11px] font-medium text-[var(--theme-accent-mint)]">
+            <span className="truncate font-mono text-[11px] font-medium text-[var(--theme-accent-mint)]">
               {profileData.statusLabel}
             </span>
           </div>
         </div>
 
-        <nav className="hidden items-center gap-1.5 md:flex" aria-label="Primary navigation">
+        <nav className="hidden flex-wrap items-center gap-1.5 md:flex" aria-label="Primary navigation">
           {navLinks.map((link) => {
             const isActive = activeId === link.id;
             return (
               <a
                 key={link.id}
                 href={`#${link.id}`}
-                className={`keycap px-2.5 py-1.5 text-xs no-underline lg:px-3 ${
+                className={`keycap min-h-[38px] px-2.5 py-1.5 text-xs no-underline lg:px-3 ${
                   isActive
                     ? 'border-[var(--theme-ink-legend)] bg-[var(--theme-keycap-active)] text-[var(--theme-accent-butter)]'
                     : 'text-[var(--theme-ink-muted)]'
@@ -109,7 +109,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
           })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleToggleTheme}
@@ -117,7 +117,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
             title={
               isLight ? 'Theme: Light — Click for Dark' : 'Theme: Dark — Click for Light'
             }
-            className="keycap px-2.5 py-1.5 text-xs text-[var(--theme-ink-primary)]"
+            className="keycap min-h-[44px] min-w-[44px] px-3 py-2 text-xs text-[var(--theme-ink-primary)] sm:min-h-[38px] sm:px-2.5 sm:py-1.5"
           >
             {isLight ? (
               <LuSun
@@ -138,7 +138,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
             onClick={onOpenPalette}
             aria-label="Open terminal command palette (Ctrl+K or Cmd+K)"
             title="Command Palette (⌘K / Ctrl+K)"
-            className="keycap px-2.5 py-1.5 text-xs text-[var(--theme-accent-mint)]"
+            className="keycap min-h-[44px] min-w-[44px] px-3 py-2 text-xs text-[var(--theme-accent-mint)] sm:min-h-[38px] sm:px-2.5 sm:py-1.5"
           >
             <LuCommand className="h-3.5 w-3.5" aria-hidden="true" />
             <span>K</span>
@@ -146,12 +146,12 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
 
           <button
             type="button"
-            className="keycap p-2 text-[var(--theme-ink-primary)] md:hidden"
+            className="keycap min-h-[44px] min-w-[44px] p-2.5 text-[var(--theme-ink-primary)] md:hidden"
             aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
           >
-            {menuOpen ? <LuX className="h-4 w-4" /> : <LuMenu className="h-4 w-4" />}
+            {menuOpen ? <LuX className="h-4 w-4" aria-hidden="true" /> : <LuMenu className="h-4 w-4" aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -174,7 +174,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
                 key={link.id}
                 href={`#${link.id}`}
                 onClick={() => setMenuOpen(false)}
-                className="keycap px-3 py-2 text-xs text-[var(--theme-ink-primary)] no-underline"
+                className="keycap min-h-[44px] px-3 py-2.5 text-xs text-[var(--theme-ink-primary)] no-underline"
               >
                 {link.label}
               </a>

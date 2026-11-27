@@ -31,7 +31,7 @@
 
   --theme-ink-primary: #f3edf7;
   --theme-ink-muted: #b9a7c9;
-  --theme-ink-legend: #9d82b3;
+  --theme-ink-legend: #ab92c1;
 
   --theme-accent-mint: #c6e3d1;
   --theme-accent-mint-dot: #c6e3d1;
@@ -243,6 +243,10 @@
     border-color: var(--theme-border-hover);
   }
 
+  .bento-card.modal-surface {
+    transition: border-color 180ms ease;
+  }
+
   /* Recessed Windowed Well (for LED badges & keyboard wells) */
   .recessed-well {
     background-color: var(--theme-well);
@@ -293,6 +297,12 @@
   .keycap:focus-visible {
     outline: 2px solid var(--theme-accent-mint);
     outline-offset: 2px;
+  }
+
+  .keycap-mint:focus-visible,
+  .keycap-butter:focus-visible {
+    outline: 2px solid var(--theme-ink-primary);
+    outline-offset: 3px;
   }
 
   /* Mint Accent Keycap (Primary CTA) */
@@ -413,7 +423,7 @@
 }
 
 .tty-cursor {
-  animation: tty-cursor-blink 1.05s steps(1, end) infinite;
+  animation: tty-cursor-blink 0.85s steps(1, end) 3 forwards;
 }
 
 .cat-hop {
@@ -465,7 +475,7 @@
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, -10px, 0) scale(0.9);
+    transform: translate3d(0, -18px, 0) scale(0.86);
   }
 }
 
@@ -487,43 +497,43 @@
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, -6px, 0) scale(0.9);
+    transform: translate3d(0, -10px, 0) scale(0.86);
   }
 }
 
 .hypr-backdrop-in {
-  animation: hypr-backdrop-in 190ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hypr-backdrop-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity;
 }
 
 .hypr-backdrop-out {
-  animation: hypr-backdrop-out 155ms ease-out forwards;
+  animation: hypr-backdrop-out 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   will-change: opacity;
   pointer-events: none;
 }
 
 .hypr-runner-in {
   transform-origin: center top;
-  animation: hypr-runner-in 250ms cubic-bezier(0.16, 1.12, 0.3, 1) both;
+  animation: hypr-runner-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: transform, opacity;
 }
 
 .hypr-runner-out {
   transform-origin: center top;
-  animation: hypr-runner-out 165ms cubic-bezier(0.36, 0, 0.66, 0) forwards;
+  animation: hypr-runner-out 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   will-change: transform, opacity;
   pointer-events: none;
 }
 
 .hypr-modal-in {
   transform-origin: center center;
-  animation: hypr-modal-in 250ms cubic-bezier(0.16, 1.12, 0.3, 1) both;
+  animation: hypr-modal-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: transform, opacity;
 }
 
 .hypr-modal-out {
   transform-origin: center center;
-  animation: hypr-modal-out 165ms cubic-bezier(0.36, 0, 0.66, 0) forwards;
+  animation: hypr-modal-out 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   will-change: transform, opacity;
   pointer-events: none;
 }

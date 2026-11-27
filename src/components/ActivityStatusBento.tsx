@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FC } from 'react';
+import { useEffect, useMemo, useRef, useState, type FC, type KeyboardEvent } from 'react';
 import { LuArrowUpRight, LuGithub } from 'react-icons/lu';
 import {
   buildFallbackContributions,
@@ -57,12 +57,19 @@ function normalizeLevel(rawLevel: unknown, count: number): ContributionLevel {
   return 4;
 }
 
+interface GridCoord {
+  row: number;
+  col: number;
+}
+
 export const ActivityStatusBento: FC = () => {
   const [days, setDays] = useState<ContributionDay[]>(() => buildFallbackContributions());
-  const [dataSource, setDataSource] = useState<'loading' | 'live' | 'snapshot'>('loading');
   const [selectedDay, setSelectedDay] = useState<ContributionDay | null>(null);
+  const [activeCoord, setActiveCoord] = useState<GridCoord | null>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
 
   useEffect(() => {
@@ -109,10 +116,9 @@ export const ActivityStatusBento: FC = () => {
 
         parsed.sort((a, b) => a.date.localeCompare(b.date));
         setDays(parsed);
-        setDataSource('live');
       })
       .catch(() => {
-        setDataSource('snapshot');
+        // Keep fallback snapshot contributions on fetch error
       })
       .finally(() => {
         window.clearTimeout(timeoutId);
@@ -124,7 +130,7 @@ export const ActivityStatusBento: FC = () => {
     };
   }, []);
 
-  const { visibleWeeks, displayedTotal, weekCount } = useMemo(() => {
+  const { rows, displayedTotal, weekCount, defaultCoord } = useMemo(() => {
     const targetWeekCount = isMobileViewport ? 22 : 52;
     const weeks: Array<Array<ContributionDay | null>> = [];
 
@@ -152,26 +158,136 @@ export const ActivityStatusBento: FC = () => {
     }
 
     const sliced = weeks.slice(-targetWeekCount);
+    const numCols = sliced.length;
+    const matrixRows: Array<Array<ContributionDay | null>> = Array.from({ length: 7 }, (_, rowIdx) =>
+      Array.from({ length: numCols }, (_, colIdx) => sliced[colIdx]?.[rowIdx] ?? null),
+    );
+
     let total = 0;
-    for (const week of sliced) {
-      for (const cell of week) {
-        if (cell) total += cell.count;
+    let lastCoord: GridCoord | null = null;
+    for (let col = 0; col < numCols; col++) {
+      for (let row = 0; row < 7; row++) {
+        const cell = matrixRows[row][col];
+        if (cell) {
+          total += cell.count;
+          lastCoord = { row, col };
+        }
       }
     }
 
     return {
-      visibleWeeks: sliced,
+      rows: matrixRows,
       displayedTotal: total,
-      weekCount: sliced.length,
+      weekCount: numCols,
+      defaultCoord: lastCoord,
     };
   }, [days, isMobileViewport]);
 
-  const statusLabel =
-    dataSource === 'live'
-      ? 'live'
-      : dataSource === 'loading'
-        ? 'syncing'
-        : 'offline snapshot';
+  // Keep mobile horizontal scroller positioned at the most recent weeks initially.
+  useEffect(() => {
+    const scroller = scrollContainerRef.current;
+    if (!scroller || !isMobileViewport) return;
+    scroller.scrollLeft = scroller.scrollWidth;
+  }, [isMobileViewport, weekCount]);
+
+  const resolvedActiveCoord = useMemo(() => {
+    if (
+      activeCoord &&
+      rows[activeCoord.row]?.[activeCoord.col] !== null &&
+      rows[activeCoord.row]?.[activeCoord.col] !== undefined
+    ) {
+      return activeCoord;
+    }
+    return defaultCoord;
+  }, [activeCoord, rows, defaultCoord]);
+
+  const moveFocusTo = (row: number, col: number) => {
+    const day = rows[row]?.[col];
+    if (!day) return;
+    setActiveCoord({ row, col });
+    setSelectedDay(day);
+    const btn = gridRef.current?.querySelector<HTMLButtonElement>(
+      `[data-grid-row="${row}"][data-grid-col="${col}"]`,
+    );
+    btn?.focus();
+  };
+
+  const findNextValid = (
+    startRow: number,
+    startCol: number,
+    dRow: number,
+    dCol: number,
+  ): GridCoord | null => {
+    let r = startRow + dRow;
+    let c = startCol + dCol;
+    while (r >= 0 && r < 7 && c >= 0 && c < weekCount) {
+      if (rows[r][c]) return { row: r, col: c };
+      r += dRow;
+      c += dCol;
+    }
+    return null;
+  };
+
+  const handleCellKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    row: number,
+    col: number,
+  ) => {
+    let target: GridCoord | null = null;
+
+    if (event.key === 'ArrowRight') {
+      target = findNextValid(row, col, 0, 1);
+    } else if (event.key === 'ArrowLeft') {
+      target = findNextValid(row, col, 0, -1);
+    } else if (event.key === 'ArrowDown') {
+      target = findNextValid(row, col, 1, 0);
+    } else if (event.key === 'ArrowUp') {
+      target = findNextValid(row, col, -1, 0);
+    } else if (event.key === 'Home') {
+      if (event.ctrlKey) {
+        outer: for (let c = 0; c < weekCount; c++) {
+          for (let r = 0; r < 7; r++) {
+            if (rows[r][c]) {
+              target = { row: r, col: c };
+              break outer;
+            }
+          }
+        }
+      } else {
+        for (let c = 0; c < weekCount; c++) {
+          if (rows[row][c]) {
+            target = { row, col: c };
+            break;
+          }
+        }
+      }
+    } else if (event.key === 'End') {
+      if (event.ctrlKey) {
+        outer: for (let c = weekCount - 1; c >= 0; c--) {
+          for (let r = 6; r >= 0; r--) {
+            if (rows[r][c]) {
+              target = { row: r, col: c };
+              break outer;
+            }
+          }
+        }
+      } else {
+        for (let c = weekCount - 1; c >= 0; c--) {
+          if (rows[row][c]) {
+            target = { row, col: c };
+            break;
+          }
+        }
+      }
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    if (target) {
+      moveFocusTo(target.row, target.col);
+    }
+  };
 
   return (
     <section
@@ -182,7 +298,6 @@ export const ActivityStatusBento: FC = () => {
       <SectionHeader
         eyebrow="LED MATRIX"
         title="GitHub Activity"
-        subtitle={`Live GitHub LED contribution matrix for @${GITHUB_USERNAME}.`}
         accentColor="mint"
       />
 
@@ -202,36 +317,18 @@ export const ActivityStatusBento: FC = () => {
                 <h3 className="font-display text-base font-bold text-[var(--theme-ink-primary)] sm:text-lg">
                   GitHub LED Matrix
                 </h3>
-                <p className="font-mono text-[11px] text-[var(--theme-ink-legend)]">
+                <p className="font-mono text-xs text-[var(--theme-ink-legend)]">
                   @{GITHUB_USERNAME} · {displayedTotal} contributions ({weekCount}w)
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span
-                className={`recessed-well inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-[11px] ${
-                  dataSource === 'live'
-                    ? 'text-[var(--theme-accent-mint)]'
-                    : 'text-[var(--theme-ink-muted)]'
-                }`}
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    dataSource === 'live'
-                      ? 'bg-[var(--theme-accent-mint-dot)]'
-                      : 'bg-[var(--theme-accent-butter-dot)]'
-                  }`}
-                  aria-hidden="true"
-                />
-                <span>{statusLabel}</span>
-              </span>
-
               <a
                 href={profileData.socials.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="keycap hidden px-2.5 py-1 text-[11px] text-[var(--theme-ink-primary)] no-underline sm:inline-flex"
+                className="keycap hidden min-h-[36px] px-2.5 py-1 text-xs text-[var(--theme-ink-primary)] no-underline sm:inline-flex"
               >
                 <span>Profile</span>
                 <LuArrowUpRight
@@ -243,41 +340,68 @@ export const ActivityStatusBento: FC = () => {
           </div>
 
           {/* LED Grid Housing */}
-          <div className="recessed-well rounded-2xl p-3 sm:p-4">
+          <div
+            ref={scrollContainerRef}
+            className="recessed-well overflow-x-auto rounded-2xl p-3 sm:overflow-visible sm:p-4"
+          >
             <div
-              className="grid gap-[3px] sm:gap-1"
-              style={{
-                gridTemplateColumns: `repeat(${Math.max(visibleWeeks.length, 1)}, minmax(0, 1fr))`,
-              }}
+              ref={gridRef}
+              className="flex w-max flex-col gap-1.5 sm:w-full sm:gap-1"
               role="grid"
-              aria-label={`GitHub contributions LED matrix for ${GITHUB_USERNAME}`}
+              aria-label={`GitHub contributions LED matrix for ${GITHUB_USERNAME}. Use arrow keys to move across days.`}
             >
-              {visibleWeeks.map((week, weekIdx) => (
-                <div key={`w-${weekIdx}`} className="grid grid-rows-7 gap-[3px] sm:gap-1">
-                  {week.map((day, dayIdx) => {
+              {rows.map((rowDays, rowIdx) => (
+                <div
+                  key={`r-${rowIdx}`}
+                  role="row"
+                  className="grid gap-1.5 sm:gap-1"
+                  style={{
+                    gridTemplateColumns: isMobileViewport
+                      ? `repeat(${Math.max(weekCount, 1)}, 1.75rem)`
+                      : `repeat(${Math.max(weekCount, 1)}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {rowDays.map((day, colIdx) => {
                     if (!day) {
                       return (
                         <span
-                          key={`empty-${weekIdx}-${dayIdx}`}
-                          className="aspect-square w-full rounded-[3px] opacity-0 sm:rounded-[4px]"
+                          key={`empty-${rowIdx}-${colIdx}`}
+                          role="gridcell"
                           aria-hidden="true"
+                          className="h-7 w-7 rounded-[4px] opacity-0 sm:aspect-square sm:h-auto sm:w-full"
                         />
                       );
                     }
 
                     const isSelected = selectedDay?.date === day.date;
+                    const isRovingActive =
+                      resolvedActiveCoord?.row === rowIdx &&
+                      resolvedActiveCoord?.col === colIdx;
+
                     return (
-                      <button
-                        key={day.date}
-                        type="button"
-                        onMouseEnter={() => setSelectedDay(day)}
-                        onFocus={() => setSelectedDay(day)}
-                        onClick={() => setSelectedDay(day)}
-                        aria-label={`${formatContributionDate(day.date)}: ${day.count} contributions`}
-                        className={`aspect-square w-full cursor-pointer rounded-[3px] border transition-transform duration-100 hover:scale-125 focus-visible:scale-125 focus-visible:outline-1 focus-visible:outline-[var(--theme-ink-primary)] sm:rounded-[4px] ${
-                          ledLevelStyles[day.level]
-                        } ${isSelected ? 'ring-1 ring-[var(--theme-ink-primary)]' : ''}`}
-                      />
+                      <div key={day.date} role="gridcell" className="flex">
+                        <button
+                          type="button"
+                          tabIndex={isRovingActive ? 0 : -1}
+                          data-grid-row={rowIdx}
+                          data-grid-col={colIdx}
+                          onMouseEnter={() => setSelectedDay(day)}
+                          onFocus={() => {
+                            setActiveCoord({ row: rowIdx, col: colIdx });
+                            setSelectedDay(day);
+                          }}
+                          onClick={() => {
+                            setActiveCoord({ row: rowIdx, col: colIdx });
+                            setSelectedDay(day);
+                          }}
+                          onKeyDown={(e) => handleCellKeyDown(e, rowIdx, colIdx)}
+                          aria-label={`${formatContributionDate(day.date)}: ${day.count} contributions`}
+                          aria-pressed={isSelected}
+                          className={`h-7 w-7 cursor-pointer rounded-[4px] border transition-transform duration-100 hover:scale-125 focus-visible:scale-125 focus-visible:outline-2 focus-visible:outline-[var(--theme-ink-primary)] motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-visible:scale-100 sm:aspect-square sm:h-auto sm:w-full ${
+                            ledLevelStyles[day.level]
+                          } ${isSelected ? 'ring-1 ring-[var(--theme-ink-primary)]' : ''}`}
+                        />
+                      </div>
                     );
                   })}
                 </div>
@@ -301,13 +425,13 @@ export const ActivityStatusBento: FC = () => {
               </span>
             ) : (
               <span className="block truncate text-[var(--theme-ink-legend)]">
-                Hover or tap any LED cell to inspect date &amp; count
+                Hover, tap, or use arrow keys on LED cells to inspect date &amp; count
               </span>
             )}
           </div>
 
           <div
-            className="flex shrink-0 items-center gap-1.5 text-[10px] text-[var(--theme-ink-legend)]"
+            className="flex shrink-0 items-center gap-1.5 text-[11px] text-[var(--theme-ink-legend)]"
             aria-label="Contribution intensity scale"
           >
             <span>Less</span>

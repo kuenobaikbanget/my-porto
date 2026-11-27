@@ -9,7 +9,6 @@ export interface SkillCategoryMeta {
   key: SkillCategoryKey;
   label: string;
   legend: string;
-  accentHex: string;
 }
 
 export interface SkillItem {
@@ -19,11 +18,11 @@ export interface SkillItem {
 }
 
 export const skillCategories: SkillCategoryMeta[] = [
-  { key: 'all', label: 'All Keys', legend: 'ALL', accentHex: '#f3edf7' },
-  { key: 'iot', label: 'IoT & Hardware', legend: 'HW', accentHex: '#f3e6a2' },
-  { key: 'linux', label: 'Linux & Networking', legend: 'SYS', accentHex: '#cfe0f2' },
-  { key: 'dev', label: 'Dev (Web & Mobile)', legend: 'DEV', accentHex: '#c6e3d1' },
-  { key: 'security', label: 'Security & Tools', legend: 'SEC', accentHex: '#eed2df' },
+  { key: 'all', label: 'All Keys', legend: 'ALL' },
+  { key: 'iot', label: 'IoT & Hardware', legend: 'HW' },
+  { key: 'linux', label: 'Linux & Networking', legend: 'SYS' },
+  { key: 'dev', label: 'Dev (Web & Mobile)', legend: 'DEV' },
+  { key: 'security', label: 'Security & Tools', legend: 'SEC' },
 ];
 
 export const skillsData: SkillItem[] = [

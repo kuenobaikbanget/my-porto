@@ -35,7 +35,7 @@ export const hobbiesData: HobbyCategory[] = [
   },
   {
     key: 'coffee',
-    label: 'Coffee · Hario Switch',
+    label: 'Coffee',
     note: 'Daily immersion-percolation pour-over brews on a Hario Switch.',
     images: collectImages('hobikopi', 'Hario Switch coffee'),
   },

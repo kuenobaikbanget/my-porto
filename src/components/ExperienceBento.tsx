@@ -60,7 +60,7 @@ export const ExperienceBento: FC = () => {
                 <p className="mt-0.5 text-sm font-semibold text-[var(--theme-accent-butter)]">
                   {item.organization}
                 </p>
-                <p className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] text-[var(--theme-ink-legend)]">
+                <p className="mt-1 inline-flex items-center gap-1 font-mono text-xs text-[var(--theme-ink-legend)]">
                   <LuMapPin className="h-3 w-3" aria-hidden="true" />
                   <span>{item.location}</span>
                 </p>
@@ -107,7 +107,7 @@ export const ExperienceBento: FC = () => {
               </span>
             </div>
 
-            <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--theme-ink-legend)]">
+            <p className="font-mono text-xs uppercase tracking-wider text-[var(--theme-ink-legend)]">
               Education
             </p>
             <h3 className="mt-1 font-display text-lg font-bold text-[var(--theme-ink-primary)]">

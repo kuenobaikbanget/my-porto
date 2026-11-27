@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FC } from 'react';
 import { useAsciiReveal } from 'ascii-reveal';
 import { skillCategories, skillsData, type SkillCategoryKey } from '../data/skills';
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 import { SectionHeader } from './SectionHeader';
 import { SkillKeycap } from './SkillKeycap';
+
+const GRID_RESIZE_DURATION_MS = 340;
+const GRID_RESIZE_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 const categoryLegendCssColor: Record<SkillCategoryKey, string> = {
   all: 'var(--theme-ink-primary)',
@@ -16,9 +19,9 @@ const categoryLegendCssColor: Record<SkillCategoryKey, string> = {
 export const TechStackBento: FC = () => {
   const [activeCategory, setActiveCategory] = useState<SkillCategoryKey>('all');
   const [renderedCategory, setRenderedCategory] = useState<SkillCategoryKey>('all');
-  const [gridHeight, setGridHeight] = useState<number | null>(null);
   const hasFilteredRef = useRef(false);
-  const gridInnerRef = useRef<HTMLDivElement | null>(null);
+  const gridViewportRef = useRef<HTMLDivElement | null>(null);
+  const prevHeightRef = useRef<number | null>(null);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
 
   const {
@@ -34,33 +37,6 @@ export const TechStackBento: FC = () => {
     revealOnMount: false,
   });
 
-  const setGridNode = useCallback(
-    (node: HTMLDivElement | null) => {
-      gridInnerRef.current = node;
-      gridRef(node);
-    },
-    [gridRef],
-  );
-
-  useEffect(() => {
-    const el = gridInnerRef.current;
-    if (!el) return;
-
-    const updateHeight = () => {
-      const nextHeight = Math.ceil(el.getBoundingClientRect().height);
-      if (nextHeight > 0) {
-        setGridHeight(nextHeight);
-      }
-    };
-
-    updateHeight();
-
-    if (typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(updateHeight);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   useEffect(() => {
     if (activeCategory === renderedCategory) return;
 
@@ -69,6 +45,9 @@ export const TechStackBento: FC = () => {
 
     void hideGrid({ origin: 'center', duration: 'cinematic', speed: 1.35 }).then(() => {
       if (!cancelled) {
+        if (gridViewportRef.current) {
+          prevHeightRef.current = gridViewportRef.current.getBoundingClientRect().height;
+        }
         setRenderedCategory(activeCategory);
       }
     });
@@ -77,6 +56,71 @@ export const TechStackBento: FC = () => {
       cancelled = true;
     };
   }, [activeCategory, renderedCategory, hideGrid]);
+
+  useLayoutEffect(() => {
+    const viewport = gridViewportRef.current;
+    const prevHeight = prevHeightRef.current;
+    prevHeightRef.current = null;
+
+    if (!viewport || prevHeight === null) return;
+
+    const resetStyles = () => {
+      viewport.style.height = '';
+      viewport.style.overflow = '';
+      viewport.style.transition = '';
+      viewport.style.willChange = '';
+    };
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const content = viewport.firstElementChild as HTMLElement | null;
+    if (prefersReducedMotion || !content) {
+      resetStyles();
+      return;
+    }
+
+    const nextHeight = content.getBoundingClientRect().height;
+    if (Math.abs(nextHeight - prevHeight) < 1) {
+      resetStyles();
+      return;
+    }
+
+    viewport.style.transition = 'none';
+    viewport.style.overflow = 'hidden';
+    viewport.style.willChange = 'height';
+    viewport.style.height = `${prevHeight}px`;
+
+    // Commit starting height before transitioning to the new height.
+    void viewport.offsetHeight;
+
+    viewport.style.transition = `height ${GRID_RESIZE_DURATION_MS}ms ${GRID_RESIZE_EASING}`;
+    viewport.style.height = `${nextHeight}px`;
+
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      viewport.removeEventListener('transitionend', handleTransitionEnd);
+      window.clearTimeout(fallbackTimer);
+      resetStyles();
+    };
+
+    const handleTransitionEnd = (event: TransitionEvent) => {
+      if (event.target === viewport && event.propertyName === 'height') {
+        finish();
+      }
+    };
+
+    viewport.addEventListener('transitionend', handleTransitionEnd);
+    const fallbackTimer = window.setTimeout(finish, GRID_RESIZE_DURATION_MS + 80);
+
+    return () => {
+      viewport.removeEventListener('transitionend', handleTransitionEnd);
+      window.clearTimeout(fallbackTimer);
+    };
+  }, [renderedCategory]);
 
   useEffect(() => {
     if (!hasFilteredRef.current) return;
@@ -105,10 +149,10 @@ export const TechStackBento: FC = () => {
       />
 
       <div className="bento-card p-5 sm:p-6">
-        {/* Filter Keycap Tabs */}
+        {/* Filter Keycap Controls */}
         <div
           className="recessed-well mb-5 flex flex-wrap gap-2 rounded-2xl p-2"
-          role="tablist"
+          role="group"
           aria-label="Filter toolbox by category"
         >
           {skillCategories.map((cat) => {
@@ -117,15 +161,14 @@ export const TechStackBento: FC = () => {
               <button
                 key={cat.key}
                 type="button"
-                role="tab"
-                aria-selected={isActive}
+                aria-pressed={isActive}
                 onClick={() => setActiveCategory(cat.key)}
-                className={`keycap px-3 py-1.5 text-xs ${
+                className={`keycap min-h-[44px] px-3 py-2 text-xs sm:min-h-[36px] sm:py-1.5 ${
                   isActive ? 'keycap-butter' : 'text-[var(--theme-ink-muted)]'
                 }`}
               >
                 <span
-                  className="text-[10px] opacity-85"
+                  className="text-[11px] opacity-90"
                   style={!isActive ? { color: categoryLegendCssColor[cat.key] } : undefined}
                 >
                   [{cat.legend}]
@@ -136,12 +179,9 @@ export const TechStackBento: FC = () => {
           })}
         </div>
 
-        {/* Bento Keycap Matrix — smooth height transition when filtering/resizing */}
-        <div
-          className="overflow-hidden transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-          style={gridHeight !== null ? { height: `${gridHeight}px` } : undefined}
-        >
-          <div ref={setGridNode} className="flex flex-wrap gap-2.5 pb-1">
+        {/* Bento Keycap Matrix */}
+        <div ref={gridViewportRef}>
+          <div ref={gridRef} className="flex flex-wrap gap-2.5 pb-1">
             {filteredSkills.map((skill) => (
               <SkillKeycap key={`${skill.category}-${skill.name}`} skill={skill} />
             ))}
