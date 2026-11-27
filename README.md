@@ -1,7 +1,6 @@
 <div align="center">
   <h1>kuenobaikbanget — Portfolio</h1>
   <img src="public/gambar.jpg" alt="Akbar Dwi Maulana avatar" width="110" style="border-radius:16px;margin:1rem 0;" />
-  <p><b>Tactile Keycap Bento · GMK Digital Nightmares Colorway</b></p>
 </div>
 
 ---
