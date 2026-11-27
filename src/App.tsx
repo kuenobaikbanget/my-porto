@@ -13,10 +13,7 @@ import type { ProjectItem } from './data/projects';
 
 function App() {
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [activeProject, setActiveProject] = useState<{
-    project: ProjectItem;
-    sourceRect: DOMRect | null;
-  } | null>(null);
+  const [activeProject, setActiveProject] = useState<ProjectItem | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -29,8 +26,8 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleOpenProject = useCallback((project: ProjectItem, sourceRect?: DOMRect) => {
-    setActiveProject({ project, sourceRect: sourceRect ?? null });
+  const handleOpenProject = useCallback((project: ProjectItem) => {
+    setActiveProject(project);
   }, []);
 
   const handleCloseProject = useCallback(() => {
@@ -53,12 +50,11 @@ function App() {
       <CommandPalette
         isOpen={paletteOpen}
         onClose={() => setPaletteOpen(false)}
-        onOpenProject={(project) => handleOpenProject(project)}
+        onOpenProject={handleOpenProject}
       />
 
       <ProjectSpecModal
-        project={activeProject?.project ?? null}
-        sourceRect={activeProject?.sourceRect ?? null}
+        project={activeProject}
         onClose={handleCloseProject}
       />
     </div>

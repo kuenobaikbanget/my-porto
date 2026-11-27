@@ -1,4 +1,4 @@
-import type { FC, KeyboardEvent, MouseEvent } from 'react';
+import type { FC, KeyboardEvent } from 'react';
 import {
   LuArrowUpRight,
   LuCpu,
@@ -49,12 +49,12 @@ function renderCategoryIcon(id: string) {
 }
 
 interface ProjectsBentoProps {
-  onOpenProject: (project: ProjectItem, sourceRect?: DOMRect) => void;
+  onOpenProject: (project: ProjectItem) => void;
 }
 
 export const ProjectsBento: FC<ProjectsBentoProps> = ({ onOpenProject }) => {
-  const handleCardClick = (project: ProjectItem, event: MouseEvent<HTMLElement>) => {
-    onOpenProject(project, event.currentTarget.getBoundingClientRect());
+  const handleCardClick = (project: ProjectItem) => {
+    onOpenProject(project);
   };
 
   const handleCardKeyDown = (project: ProjectItem, event: KeyboardEvent<HTMLElement>) => {
@@ -64,7 +64,7 @@ export const ProjectsBento: FC<ProjectsBentoProps> = ({ onOpenProject }) => {
     }
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      onOpenProject(project, event.currentTarget.getBoundingClientRect());
+      onOpenProject(project);
     }
   };
 
@@ -85,7 +85,7 @@ export const ProjectsBento: FC<ProjectsBentoProps> = ({ onOpenProject }) => {
             role="button"
             tabIndex={0}
             aria-label={`Inspect ${project.title} spec sheet`}
-            onClick={(e) => handleCardClick(project, e)}
+            onClick={() => handleCardClick(project)}
             onKeyDown={(e) => handleCardKeyDown(project, e)}
             className="bento-card group flex cursor-pointer flex-col justify-between p-5 text-left focus-visible:outline-2 focus-visible:outline-[var(--theme-accent-mint)] sm:p-6"
           >

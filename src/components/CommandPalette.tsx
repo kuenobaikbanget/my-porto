@@ -14,6 +14,7 @@ import {
 import { useTheme } from '../context/useTheme';
 import { profileData } from '../data/profile';
 import { projectsData, type ProjectItem } from '../data/projects';
+import { useHyprPresence } from '../hooks/useHyprPresence';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
   const listRef = useRef<HTMLDivElement | null>(null);
   const copyTimerRef = useRef<number | null>(null);
   const { theme, toggleTheme } = useTheme();
+  const { isMounted, isClosing } = useHyprPresence(isOpen);
 
   const isLight = theme === 'light';
 
@@ -71,7 +73,13 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     setSelectedIndex(0);
 
     const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
     document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
 
     const focusTimer = window.setTimeout(() => {
       inputRef.current?.focus();
@@ -89,6 +97,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
       window.clearTimeout(focusTimer);
       window.removeEventListener('keydown', handleWindowKeyDown);
       document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPaddingRight;
     };
   }, [isOpen, onClose]);
 
@@ -435,7 +444,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isMounted) return null;
 
   const renderGroupIcon = (item: PaletteItem) => {
     if (item.group === 'Command') {
@@ -474,14 +483,18 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--theme-backdrop)] px-3 pt-16 pb-6 backdrop-blur-sm sm:px-4 sm:pt-24"
+      className={`fixed inset-0 z-50 flex items-start justify-center bg-[var(--theme-backdrop)] px-3 pt-16 pb-6 backdrop-blur-sm sm:px-4 sm:pt-24 ${
+        isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
+      }`}
       role="dialog"
       aria-modal="true"
       aria-label="Terminal Command Palette"
       onClick={onClose}
     >
       <div
-        className="bento-card flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden"
+        className={`bento-card flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden ${
+          isClosing ? 'hypr-runner-out' : 'hypr-runner-in'
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Terminal Title Bar (matches ~/cat.tty) */}

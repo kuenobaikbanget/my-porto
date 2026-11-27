@@ -1,7 +1,5 @@
 import {
-  useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   type FC,
 } from 'react';
@@ -16,10 +14,10 @@ import {
   LuX,
 } from 'react-icons/lu';
 import type { ProjectAccent, ProjectItem } from '../data/projects';
+import { useHyprPresence } from '../hooks/useHyprPresence';
 
 interface ProjectSpecModalProps {
   project: ProjectItem | null;
-  sourceRect: DOMRect | null;
   onClose: () => void;
 }
 
@@ -61,166 +59,12 @@ function renderProjectIcon(id: string) {
   );
 }
 
-function resolveOriginRect(projectId: string, fallbackRect: DOMRect | null): DOMRect | null {
-  if (typeof document !== 'undefined') {
-    const cardEl = document.querySelector<HTMLElement>(
-      `[data-project-card-id="${projectId}"]`,
-    );
-    if (cardEl) {
-      const rect = cardEl.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        return rect;
-      }
-    }
-  }
-  return fallbackRect;
-}
-
 export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
   project,
-  sourceRect,
   onClose,
 }) => {
-  const modalRef = useRef<HTMLDivElement | null>(null);
-  const backdropRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const isClosingRef = useRef(false);
-  const activeAnimRef = useRef<Animation | null>(null);
-
-  const requestClose = useCallback(() => {
-    if (!project || isClosingRef.current) return;
-    isClosingRef.current = true;
-
-    const modalEl = modalRef.current;
-    const backdropEl = backdropRef.current;
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (!modalEl || prefersReducedMotion) {
-      onClose();
-      return;
-    }
-
-    activeAnimRef.current?.cancel();
-
-    const targetRect = modalEl.getBoundingClientRect();
-    const originRect = resolveOriginRect(project.id, sourceRect);
-
-    let keyframeTo: Keyframe;
-    if (originRect && targetRect.width > 0 && targetRect.height > 0) {
-      const dx =
-        originRect.left + originRect.width / 2 - (targetRect.left + targetRect.width / 2);
-      const dy =
-        originRect.top + originRect.height / 2 - (targetRect.top + targetRect.height / 2);
-      const sx = Math.max(0.15, originRect.width / targetRect.width);
-      const sy = Math.max(0.15, originRect.height / targetRect.height);
-      keyframeTo = {
-        transform: `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`,
-        opacity: 0,
-      };
-    } else {
-      keyframeTo = {
-        transform: 'translate3d(0, 8px, 0) scale(0.93)',
-        opacity: 0,
-      };
-    }
-
-    backdropEl?.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: 240,
-      easing: 'ease-out',
-      fill: 'forwards',
-    });
-
-    const anim = modalEl.animate(
-      [
-        {
-          transform: 'translate3d(0, 0, 0) scale(1, 1)',
-          opacity: 1,
-        },
-        keyframeTo,
-      ],
-      {
-        duration: 280,
-        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-        fill: 'forwards',
-      },
-    );
-
-    activeAnimRef.current = anim;
-
-    let finished = false;
-    const finalize = () => {
-      if (finished) return;
-      finished = true;
-      onClose();
-    };
-
-    anim.onfinish = finalize;
-    window.setTimeout(finalize, 340);
-  }, [onClose, project, sourceRect]);
-
-  useLayoutEffect(() => {
-    if (!project) return;
-    isClosingRef.current = false;
-
-    const modalEl = modalRef.current;
-    const backdropEl = backdropRef.current;
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (!modalEl || prefersReducedMotion) return;
-
-    const targetRect = modalEl.getBoundingClientRect();
-    const originRect = resolveOriginRect(project.id, sourceRect);
-
-    let keyframeFrom: Keyframe;
-    if (originRect && targetRect.width > 0 && targetRect.height > 0) {
-      const dx =
-        originRect.left + originRect.width / 2 - (targetRect.left + targetRect.width / 2);
-      const dy =
-        originRect.top + originRect.height / 2 - (targetRect.top + targetRect.height / 2);
-      const sx = Math.max(0.15, originRect.width / targetRect.width);
-      const sy = Math.max(0.15, originRect.height / targetRect.height);
-      keyframeFrom = {
-        transform: `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`,
-        opacity: 0.38,
-      };
-    } else {
-      keyframeFrom = {
-        transform: 'translate3d(0, 10px, 0) scale(0.92)',
-        opacity: 0,
-      };
-    }
-
-    backdropEl?.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: 280,
-      easing: 'ease-out',
-      fill: 'both',
-    });
-
-    const anim = modalEl.animate(
-      [
-        keyframeFrom,
-        {
-          transform: 'translate3d(0, 0, 0) scale(1, 1)',
-          opacity: 1,
-        },
-      ],
-      {
-        duration: 340,
-        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-        fill: 'both',
-      },
-    );
-
-    activeAnimRef.current = anim;
-
-    return () => {
-      anim.cancel();
-    };
-  }, [project, sourceRect]);
+  const { isMounted, isClosing, displayValue: activeProject } = useHyprPresence(project);
 
   useEffect(() => {
     if (!project) return;
@@ -241,7 +85,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        requestClose();
+        onClose();
       }
     };
 
@@ -252,45 +96,46 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
       document.body.style.overflow = prevOverflow;
       document.body.style.paddingRight = prevPaddingRight;
     };
-  }, [project, requestClose]);
+  }, [project, onClose]);
 
-  if (!project) return null;
+  if (!isMounted || !activeProject) return null;
 
   return (
     <div
-      ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-backdrop)] p-3 backdrop-blur-sm sm:p-6"
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-backdrop)] p-3 backdrop-blur-sm sm:p-6 ${
+        isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
+      }`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="spec-modal-title"
-      onClick={requestClose}
+      onClick={onClose}
     >
       <div
-        ref={modalRef}
-        style={{ transformOrigin: 'center center', willChange: 'transform, opacity' }}
-        className="bento-card flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden"
+        className={`bento-card flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden ${
+          isClosing ? 'hypr-modal-out' : 'hypr-modal-in'
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Hardware Spec-Sheet Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--theme-border)] bg-[var(--theme-terminal-bar)] px-5 py-4 sm:px-6">
           <div className="flex min-w-0 items-start gap-3">
             <div className="recessed-well mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-              {renderProjectIcon(project.id)}
+              {renderProjectIcon(activeProject.id)}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
                 <span className="font-semibold tracking-wider text-[var(--theme-ink-legend)]">
-                  {project.specCode}
+                  {activeProject.specCode}
                 </span>
                 <span className="text-[var(--theme-ink-legend)]">·</span>
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-medium ${accentBadgeStyles[project.accent]}`}
+                  className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-medium ${accentBadgeStyles[activeProject.accent]}`}
                 >
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${accentDotStyles[project.accent]}`}
+                    className={`h-1.5 w-1.5 rounded-full ${accentDotStyles[activeProject.accent]}`}
                     aria-hidden="true"
                   />
-                  {project.status}
+                  {activeProject.status}
                 </span>
               </div>
 
@@ -298,10 +143,10 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
                 id="spec-modal-title"
                 className="mt-1 font-display text-xl font-bold text-[var(--theme-ink-primary)] sm:text-2xl"
               >
-                {project.title}
+                {activeProject.title}
               </h3>
               <p className="mt-0.5 font-mono text-xs text-[var(--theme-ink-muted)]">
-                {project.category} · {project.period} · {project.role}
+                {activeProject.category} · {activeProject.period} · {activeProject.role}
               </p>
             </div>
           </div>
@@ -309,7 +154,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
           <button
             ref={closeButtonRef}
             type="button"
-            onClick={requestClose}
+            onClick={onClose}
             className="keycap shrink-0 px-2.5 py-1.5 text-xs text-[var(--theme-ink-primary)]"
             aria-label="Close project spec sheet"
           >
@@ -327,10 +172,10 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
             </p>
             <div className="recessed-well rounded-2xl p-4">
               <p className="text-sm font-semibold text-[var(--theme-ink-primary)]">
-                {project.tagline}
+                {activeProject.tagline}
               </p>
               <p className="mt-2 text-xs leading-relaxed text-[var(--theme-ink-muted)] sm:text-sm">
-                {project.overview}
+                {activeProject.overview}
               </p>
             </div>
           </div>
@@ -342,10 +187,10 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
               <span>02 // Architecture &amp; Stack</span>
             </p>
             <ul className="space-y-2 text-xs leading-relaxed text-[var(--theme-ink-muted)] sm:text-sm">
-              {project.architecture.map((line) => (
+              {activeProject.architecture.map((line) => (
                 <li key={line} className="flex items-start gap-2.5">
                   <span
-                    className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${accentDotStyles[project.accent]}`}
+                    className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${accentDotStyles[activeProject.accent]}`}
                     aria-hidden="true"
                   />
                   <span>{line}</span>
@@ -354,7 +199,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
             </ul>
 
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {project.stack.map((tech) => (
+              {activeProject.stack.map((tech) => (
                 <span
                   key={tech}
                   className="keycap cursor-default px-2.5 py-1 text-[11px] text-[var(--theme-accent-sky)]"
@@ -371,7 +216,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
               03 // Key Highlights
             </p>
             <ul className="space-y-1.5 rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-well)]/60 p-4 text-xs text-[var(--theme-ink-muted)] sm:text-sm">
-              {project.highlights.map((item) => (
+              {activeProject.highlights.map((item) => (
                 <li key={item} className="flex items-start gap-2">
                   <span
                     className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[var(--theme-ink-legend)]"
@@ -387,13 +232,13 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
         {/* Footer Actions */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--theme-border)] bg-[var(--theme-terminal-bar)] px-5 py-3.5 sm:px-6">
           <span className="font-mono text-[11px] text-[var(--theme-ink-legend)]">
-            {project.orgBadge ? project.orgBadge : 'github.com/kuenobaikbanget'}
+            {activeProject.orgBadge ? activeProject.orgBadge : 'github.com/kuenobaikbanget'}
           </span>
 
           <div className="flex flex-wrap items-center gap-2">
-            {project.repoUrl ? (
+            {activeProject.repoUrl ? (
               <a
-                href={project.repoUrl}
+                href={activeProject.repoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="keycap keycap-mint px-3.5 py-1.5 text-xs no-underline"
@@ -404,9 +249,9 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
               </a>
             ) : null}
 
-            {project.liveUrl ? (
+            {activeProject.liveUrl ? (
               <a
-                href={project.liveUrl}
+                href={activeProject.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="keycap px-3.5 py-1.5 text-xs text-[var(--theme-ink-primary)] no-underline"
@@ -416,9 +261,9 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
               </a>
             ) : null}
 
-            {!project.repoUrl && !project.liveUrl && project.orgBadge ? (
+            {!activeProject.repoUrl && !activeProject.liveUrl && activeProject.orgBadge ? (
               <span className="recessed-well rounded-lg px-3 py-1.5 font-mono text-xs text-[var(--theme-accent-pink)]">
-                {project.orgBadge}
+                {activeProject.orgBadge}
               </span>
             ) : null}
           </div>

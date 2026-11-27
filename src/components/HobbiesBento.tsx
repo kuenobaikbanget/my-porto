@@ -1,12 +1,14 @@
 import { useEffect, useState, type FC } from 'react';
 import { LuExpand, LuX } from 'react-icons/lu';
 import { hobbiesData, type HobbyCategory } from '../data/hobbies';
+import { useHyprPresence } from '../hooks/useHyprPresence';
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 import { SectionHeader } from './SectionHeader';
 
 export const HobbiesBento: FC = () => {
   const [activeTab, setActiveTab] = useState<HobbyCategory['key']>('keyboards');
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+  const { isMounted, isClosing, displayValue: activeImage } = useHyprPresence(lightboxImage);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
 
   const currentCategory =
@@ -91,21 +93,25 @@ export const HobbiesBento: FC = () => {
       </div>
 
       {/* Lightbox Modal */}
-      {lightboxImage ? (
+      {isMounted && activeImage ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-backdrop)] p-4 backdrop-blur-sm"
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-backdrop)] p-4 backdrop-blur-sm ${
+            isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
+          }`}
           role="dialog"
           aria-modal="true"
-          aria-label={lightboxImage.alt}
+          aria-label={activeImage.alt}
           onClick={() => setLightboxImage(null)}
         >
           <div
-            className="bento-card relative max-h-[90vh] max-w-3xl overflow-hidden p-3"
+            className={`bento-card relative max-h-[90vh] max-w-3xl overflow-hidden p-3 ${
+              isClosing ? 'hypr-modal-out' : 'hypr-modal-in'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-2 flex items-center justify-between gap-4 px-1">
               <span className="font-mono text-xs text-[var(--theme-ink-muted)]">
-                {lightboxImage.alt}
+                {activeImage.alt}
               </span>
               <button
                 type="button"
@@ -117,8 +123,8 @@ export const HobbiesBento: FC = () => {
               </button>
             </div>
             <img
-              src={lightboxImage.src}
-              alt={lightboxImage.alt}
+              src={activeImage.src}
+              alt={activeImage.alt}
               className="max-h-[76vh] w-full rounded-xl object-contain"
             />
           </div>
