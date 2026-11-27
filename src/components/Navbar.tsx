@@ -1,5 +1,5 @@
 import { useEffect, useState, type FC } from 'react';
-import { LuFileText, LuMenu, LuX } from 'react-icons/lu';
+import { LuMenu, LuX } from 'react-icons/lu';
 import { profileData } from '../data/profile';
 
 const navLinks = [
@@ -77,7 +77,7 @@ export const Navbar: FC = () => {
               <a
                 key={link.id}
                 href={`#${link.id}`}
-                className={`keycap px-2.5 py-1.5 text-xs no-underline ${
+                className={`keycap px-3 py-1.5 text-xs no-underline ${
                   isActive
                     ? 'border-[#8e71a2] bg-[#36254a] text-[#f3e6a2]'
                     : 'text-[#b9a7c9]'
@@ -87,27 +87,9 @@ export const Navbar: FC = () => {
               </a>
             );
           })}
-          <a
-            href={profileData.cvUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="keycap keycap-mint ml-1 px-3 py-1.5 text-xs no-underline"
-          >
-            <LuFileText className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>CV</span>
-          </a>
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
-          <a
-            href={profileData.cvUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="keycap keycap-mint px-2.5 py-1.5 text-xs no-underline"
-          >
-            <LuFileText className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>CV</span>
-          </a>
           <button
             type="button"
             className="keycap p-2 text-[#f3edf7]"

@@ -1,30 +1,16 @@
-import { useState, type FC } from 'react';
+import type { FC } from 'react';
 import {
   LuArrowDownRight,
-  LuCheck,
-  LuCopy,
-  LuFileText,
   LuGithub,
   LuGraduationCap,
   LuLinkedin,
   LuMapPin,
 } from 'react-icons/lu';
 import { profileData } from '../data/profile';
+import { EmailActionPopover } from './EmailActionPopover';
 import { TuxedoCatWidget } from './TuxedoCatWidget';
 
 export const HeroBento: FC = () => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(profileData.email);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      window.location.href = `mailto:${profileData.email}`;
-    }
-  };
-
   return (
     <section id="hero" className="pt-6 pb-8 sm:pt-10 sm:pb-10">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -101,40 +87,19 @@ export const HeroBento: FC = () => {
             {/* Tactile Keycap Action Row */}
             <div className="flex flex-wrap items-center gap-2.5">
               <a
-                href={profileData.cvUrl}
-                download={profileData.cvFilename}
+                href="#projects"
                 className="keycap keycap-mint px-4 py-2 text-xs no-underline sm:text-sm"
               >
-                <LuFileText className="h-4 w-4" aria-hidden="true" />
-                <span>Resume / CV</span>
-              </a>
-
-              <a
-                href="#projects"
-                className="keycap px-4 py-2 text-xs text-[#f3edf7] no-underline sm:text-sm"
-              >
                 <span>View Projects</span>
-                <LuArrowDownRight className="h-4 w-4 text-[#f3e6a2]" aria-hidden="true" />
+                <LuArrowDownRight className="h-4 w-4" aria-hidden="true" />
               </a>
 
-              <button
-                type="button"
-                onClick={handleCopyEmail}
-                className="keycap px-3.5 py-2 text-xs text-[#cfe0f2] sm:text-sm"
-                aria-label={`Copy email address ${profileData.email}`}
-              >
-                {copied ? (
-                  <>
-                    <LuCheck className="h-4 w-4 text-[#c6e3d1]" aria-hidden="true" />
-                    <span className="text-[#c6e3d1]">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <LuCopy className="h-4 w-4 text-[#8e71a2]" aria-hidden="true" />
-                    <span>{profileData.email}</span>
-                  </>
-                )}
-              </button>
+              <EmailActionPopover
+                email={profileData.email}
+                variant="plum"
+                align="right-mobile"
+                placement="bottom"
+              />
 
               <div className="flex items-center gap-2">
                 <a

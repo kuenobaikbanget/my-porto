@@ -13,8 +13,6 @@ export interface ProfileData {
   gpa: string;
   statusLabel: string;
   email: string;
-  cvUrl: string;
-  cvFilename: string;
   avatarSrc: string;
   socials: {
     github: string;
@@ -37,8 +35,6 @@ export const profileData: ProfileData = {
   gpa: '3.87 / 4.00',
   statusLabel: 'IT Support Intern @ PT Kalapa · Open to Ops/IoT',
   email: 'akbardwi373@gmail.com',
-  cvUrl: '/CV-Akbar-Dwi-Maulana.pdf',
-  cvFilename: 'CV-Akbar-Dwi-Maulana.pdf',
   avatarSrc: avatarImage,
   socials: {
     github: 'https://github.com/kuenobaikbanget',

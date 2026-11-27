@@ -1,36 +1,15 @@
-import { useState, type FC } from 'react';
-import {
-  LuCheck,
-  LuCopy,
-  LuFileText,
-  LuGithub,
-  LuInstagram,
-  LuLinkedin,
-  LuMail,
-} from 'react-icons/lu';
+import type { FC } from 'react';
+import { LuGithub, LuInstagram, LuLinkedin } from 'react-icons/lu';
 import { profileData } from '../data/profile';
+import { EmailActionPopover } from './EmailActionPopover';
 
 export const ContactFooter: FC = () => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(profileData.email);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      window.location.href = `mailto:${profileData.email}`;
-    }
-  };
-
   return (
     <footer id="contact" className="pt-8 pb-12 sm:pt-10 sm:pb-16">
       <div className="bento-card p-6 sm:p-8">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
-            <p className="font-mono text-xs tracking-wider text-[#8e71a2]">
-              GET IN TOUCH
-            </p>
+            <p className="font-mono text-xs tracking-wider text-[#8e71a2]">GET IN TOUCH</p>
             <h2 className="mt-1 font-display text-2xl font-bold text-[#f3edf7] sm:text-3xl">
               Let&apos;s build dependable systems.
             </h2>
@@ -41,40 +20,12 @@ export const ContactFooter: FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <a
-              href={`mailto:${profileData.email}`}
-              className="keycap keycap-mint px-4 py-2 text-xs no-underline sm:text-sm"
-            >
-              <LuMail className="h-4 w-4" aria-hidden="true" />
-              <span>Email Me</span>
-            </a>
-
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="keycap px-3.5 py-2 text-xs text-[#f3edf7] sm:text-sm"
-            >
-              {copied ? (
-                <>
-                  <LuCheck className="h-4 w-4 text-[#c6e3d1]" aria-hidden="true" />
-                  <span className="text-[#c6e3d1]">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <LuCopy className="h-4 w-4 text-[#f3e6a2]" aria-hidden="true" />
-                  <span>{profileData.email}</span>
-                </>
-              )}
-            </button>
-
-            <a
-              href={profileData.cvUrl}
-              download={profileData.cvFilename}
-              className="keycap px-3.5 py-2 text-xs text-[#f3e6a2] no-underline sm:text-sm"
-            >
-              <LuFileText className="h-4 w-4" aria-hidden="true" />
-              <span>CV PDF</span>
-            </a>
+            <EmailActionPopover
+              email={profileData.email}
+              variant="mint"
+              align="right-md"
+              placement="top"
+            />
           </div>
         </div>
 
