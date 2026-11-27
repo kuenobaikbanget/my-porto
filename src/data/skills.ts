@@ -31,7 +31,6 @@ export const skillsData: SkillItem[] = [
   { name: 'Arduino', category: 'iot', legend: 'MCU' },
   { name: 'ESP32', category: 'iot', legend: 'WIFI' },
   { name: 'Sensor Interfacing', category: 'iot', legend: 'I/O' },
-  { name: 'Servo Actuation', category: 'iot', legend: 'PWM' },
   { name: 'PC & Laptop Assembly', category: 'iot', legend: 'RIG' },
 
   // Linux & Networking

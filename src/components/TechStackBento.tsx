@@ -1,25 +1,56 @@
-import { useMemo, useState, type FC } from 'react';
+import { useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useAsciiReveal } from 'ascii-reveal';
 import { skillCategories, skillsData, type SkillCategoryKey } from '../data/skills';
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 import { SectionHeader } from './SectionHeader';
-
-const categoryAccentDot: Record<Exclude<SkillCategoryKey, 'all'>, string> = {
-  iot: 'bg-[#f3e6a2]',
-  linux: 'bg-[#cfe0f2]',
-  dev: 'bg-[#c6e3d1]',
-  security: 'bg-[#eed2df]',
-};
+import { SkillKeycap } from './SkillKeycap';
 
 export const TechStackBento: FC = () => {
   const [activeCategory, setActiveCategory] = useState<SkillCategoryKey>('all');
+  const [renderedCategory, setRenderedCategory] = useState<SkillCategoryKey>('all');
+  const hasFilteredRef = useRef(false);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
+
+  const {
+    ref: gridRef,
+    reveal: revealGrid,
+    hide: hideGrid,
+  } = useAsciiReveal({
+    preset: 'terminal',
+    duration: 'cinematic',
+    speed: 1.25,
+    origin: 'top-left',
+    revealOnMount: false,
+  });
+
+  useEffect(() => {
+    if (activeCategory === renderedCategory) return;
+
+    let cancelled = false;
+    hasFilteredRef.current = true;
+
+    void hideGrid({ origin: 'center', duration: 'cinematic', speed: 1.35 }).then(() => {
+      if (!cancelled) {
+        setRenderedCategory(activeCategory);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCategory, renderedCategory, hideGrid]);
+
+  useEffect(() => {
+    if (!hasFilteredRef.current) return;
+    void revealGrid({ origin: 'top-left', duration: 'cinematic', speed: 1.25 });
+  }, [renderedCategory, revealGrid]);
 
   const filteredSkills = useMemo(
     () =>
-      activeCategory === 'all'
+      renderedCategory === 'all'
         ? skillsData
-        : skillsData.filter((item) => item.category === activeCategory),
-    [activeCategory],
+        : skillsData.filter((item) => item.category === renderedCategory),
+    [renderedCategory],
   );
 
   return (
@@ -67,28 +98,10 @@ export const TechStackBento: FC = () => {
           })}
         </div>
 
-        {/* Keycap Grid */}
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        {/* Bento Keycap Matrix — each keycap sizes to its own label */}
+        <div ref={gridRef} className="flex flex-wrap gap-2.5">
           {filteredSkills.map((skill) => (
-            <div
-              key={`${skill.category}-${skill.name}`}
-              className="keycap justify-between px-3 py-2.5 text-left"
-            >
-              <div className="min-w-0">
-                <div className="mb-0.5 flex items-center gap-1.5">
-                  <span
-                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${categoryAccentDot[skill.category]}`}
-                    aria-hidden="true"
-                  />
-                  <span className="font-mono text-[10px] tracking-wider text-[#8e71a2]">
-                    {skill.legend}
-                  </span>
-                </div>
-                <div className="truncate font-sans text-xs font-semibold text-[#f3edf7] sm:text-sm">
-                  {skill.name}
-                </div>
-              </div>
-            </div>
+            <SkillKeycap key={`${skill.category}-${skill.name}`} skill={skill} />
           ))}
         </div>
       </div>
