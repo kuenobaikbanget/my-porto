@@ -191,7 +191,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   h1,
@@ -227,129 +227,131 @@
   }
 }
 
-/* Tactile Bento Board Housing */
-.bento-card {
-  background-color: var(--theme-housing);
-  border: 1px solid var(--theme-border);
-  border-radius: 18px;
-  box-shadow:
-    inset 0 1px 0 var(--theme-housing-highlight),
-    0 6px 0 var(--theme-bevel);
-  transition: border-color 180ms ease, transform 180ms ease;
-}
+@layer components {
+  /* Tactile Bento Board Housing */
+  .bento-card {
+    background-color: var(--theme-housing);
+    border: 1px solid var(--theme-border);
+    border-radius: 18px;
+    box-shadow:
+      inset 0 1px 0 var(--theme-housing-highlight),
+      0 6px 0 var(--theme-bevel);
+    transition: border-color 180ms ease, transform 180ms ease;
+  }
 
-.bento-card:hover {
-  border-color: var(--theme-border-hover);
-}
+  .bento-card:hover {
+    border-color: var(--theme-border-hover);
+  }
 
-/* Recessed Windowed Well (for LED badges & keyboard wells) */
-.recessed-well {
-  background-color: var(--theme-well);
-  border: 1px solid var(--theme-border-well);
-  box-shadow: inset 0 2px 4px var(--theme-well-shadow);
-}
+  /* Recessed Windowed Well (for LED badges & keyboard wells) */
+  .recessed-well {
+    background-color: var(--theme-well);
+    border: 1px solid var(--theme-border-well);
+    box-shadow: inset 0 2px 4px var(--theme-well-shadow);
+  }
 
-/* Tactile Double-Shot Keycap Button */
-.keycap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background-color: var(--theme-keycap);
-  color: var(--theme-ink-primary);
-  border: 1px solid var(--theme-border-strong);
-  border-bottom-width: 1px;
-  border-radius: 10px;
-  box-shadow:
-    inset 0 1px 0 var(--theme-keycap-highlight),
-    0 3px 0 var(--theme-bevel);
-  font-family: var(--font-mono);
-  font-weight: 500;
-  cursor: pointer;
-  user-select: none;
-  transition:
-    transform 90ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 90ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease;
-}
+  /* Tactile Double-Shot Keycap Button */
+  .keycap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: var(--theme-keycap);
+    color: var(--theme-ink-primary);
+    border: 1px solid var(--theme-border-strong);
+    border-bottom-width: 1px;
+    border-radius: 10px;
+    box-shadow:
+      inset 0 1px 0 var(--theme-keycap-highlight),
+      0 3px 0 var(--theme-bevel);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      transform 90ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 90ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
 
-.keycap:hover {
-  background-color: var(--theme-keycap-hover);
-  border-color: var(--theme-ink-legend);
-}
+  .keycap:hover {
+    background-color: var(--theme-keycap-hover);
+    border-color: var(--theme-ink-legend);
+  }
 
-.keycap:active,
-.keycap[data-pressed="true"] {
-  transform: translateY(2px);
-  box-shadow:
-    inset 0 1px 0 var(--theme-housing-highlight),
-    0 1px 0 var(--theme-bevel);
-}
+  .keycap:active,
+  .keycap[data-pressed="true"] {
+    transform: translateY(2px);
+    box-shadow:
+      inset 0 1px 0 var(--theme-housing-highlight),
+      0 1px 0 var(--theme-bevel);
+  }
 
-.keycap:focus-visible {
-  outline: 2px solid var(--theme-accent-mint);
-  outline-offset: 2px;
-}
+  .keycap:focus-visible {
+    outline: 2px solid var(--theme-accent-mint);
+    outline-offset: 2px;
+  }
 
-/* Mint Accent Keycap (Primary CTA) */
-.keycap-mint {
-  background-color: var(--theme-keycap-mint-bg);
-  color: var(--theme-keycap-mint-ink);
-  border: 1px solid var(--theme-keycap-mint-border);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 3px 0 var(--theme-keycap-mint-bevel);
-  font-weight: 600;
-}
+  /* Mint Accent Keycap (Primary CTA) */
+  .keycap-mint {
+    background-color: var(--theme-keycap-mint-bg);
+    color: var(--theme-keycap-mint-ink);
+    border: 1px solid var(--theme-keycap-mint-border);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 3px 0 var(--theme-keycap-mint-bevel);
+    font-weight: 600;
+  }
 
-.keycap-mint:hover {
-  background-color: var(--theme-keycap-mint-hover);
-  border-color: var(--theme-keycap-mint-border);
-}
+  .keycap-mint:hover {
+    background-color: var(--theme-keycap-mint-hover);
+    border-color: var(--theme-keycap-mint-border);
+  }
 
-.keycap-mint:active {
-  transform: translateY(2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 1px 0 var(--theme-keycap-mint-bevel);
-}
+  .keycap-mint:active {
+    transform: translateY(2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 1px 0 var(--theme-keycap-mint-bevel);
+  }
 
-/* Butter Yellow Accent Keycap (Active filter / highlight) */
-.keycap-butter {
-  background-color: var(--theme-keycap-butter-bg);
-  color: var(--theme-keycap-butter-ink);
-  border: 1px solid var(--theme-keycap-butter-border);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 3px 0 var(--theme-keycap-butter-bevel);
-  font-weight: 600;
-}
+  /* Butter Yellow Accent Keycap (Active filter / highlight) */
+  .keycap-butter {
+    background-color: var(--theme-keycap-butter-bg);
+    color: var(--theme-keycap-butter-ink);
+    border: 1px solid var(--theme-keycap-butter-border);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 3px 0 var(--theme-keycap-butter-bevel);
+    font-weight: 600;
+  }
 
-.keycap-butter:hover {
-  background-color: var(--theme-keycap-butter-hover);
-  border-color: var(--theme-keycap-butter-border);
-}
+  .keycap-butter:hover {
+    background-color: var(--theme-keycap-butter-hover);
+    border-color: var(--theme-keycap-butter-border);
+  }
 
-.keycap-butter:active {
-  transform: translateY(2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 1px 0 var(--theme-keycap-butter-bevel);
-}
+  .keycap-butter:active {
+    transform: translateY(2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 1px 0 var(--theme-keycap-butter-bevel);
+  }
 
-/* Scroll reveal animation */
-.reveal-block {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 420ms ease, transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
+  /* Scroll reveal animation */
+  .reveal-block {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 420ms ease, transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
 
-.reveal-block.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+  .reveal-block.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Terminal ASCII Cat animations */
