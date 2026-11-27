@@ -14,7 +14,7 @@ interface RevealOnScrollResult<T extends HTMLElement> {
 export function useRevealOnScroll<T extends HTMLElement = HTMLElement>(
   options: UseRevealOnScrollOptions = {},
 ): RevealOnScrollResult<T> {
-  const { threshold = 0.02, rootMargin = '0px 0px 80px 0px', once = true } = options;
+  const { threshold = 0, rootMargin = '0px 0px 120px 0px', once = true } = options;
   const ref = useRef<T | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 

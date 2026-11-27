@@ -11,6 +11,20 @@
   />
   <meta name="author" content="Akbar Dwi Maulana" />
   <meta name="theme-color" content="#170e1f" />
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('kueno-theme');
+        var theme = stored === 'analog-dreams' ? 'analog-dreams' : 'digital-nightmares';
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme === 'analog-dreams' ? 'light' : 'dark';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'analog-dreams' ? '#f3efe7' : '#170e1f');
+      } catch (e) {
+        document.documentElement.dataset.theme = 'digital-nightmares';
+      }
+    })();
+  </script>
   <link rel="canonical" href="https://kueno.web.id/" />
 
   <link rel="icon" type="image/jpeg" href="/gambar.jpg?v=2" />

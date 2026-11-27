@@ -145,11 +145,11 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
         aria-controls={popoverId}
         aria-haspopup="menu"
         className={`keycap px-4 py-2 text-xs sm:text-sm ${
-          variant === 'mint' ? 'keycap-mint' : 'text-[#f3edf7]'
+          variant === 'mint' ? 'keycap-mint' : 'text-[var(--theme-ink-primary)]'
         }`}
       >
         <LuMail
-          className={`h-4 w-4 ${variant === 'mint' ? '' : 'text-[#c6e3d1]'}`}
+          className={`h-4 w-4 ${variant === 'mint' ? '' : 'text-[var(--theme-accent-mint)]'}`}
           aria-hidden="true"
         />
         <span>Email Me</span>
@@ -168,8 +168,8 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
           aria-label="Email options"
           className={`absolute z-50 w-64 max-w-[calc(100vw-3rem)] ${alignmentClasses} ${placementClasses}`}
         >
-          <div className="rounded-2xl border border-[#5b4078] bg-[#22162e] p-2 shadow-[0_8px_0_#110a18,0_14px_28px_rgba(9,5,14,0.65)]">
-            <div className="mb-1.5 px-2.5 pt-1 font-mono text-[10px] tracking-wider text-[#8e71a2]">
+          <div className="rounded-2xl border border-[var(--theme-border-hover)] bg-[var(--theme-housing)] p-2 shadow-[0_8px_0_var(--theme-bevel),0_14px_28px_var(--theme-popover-shadow)]">
+            <div className="mb-1.5 px-2.5 pt-1 font-mono text-[10px] tracking-wider text-[var(--theme-ink-legend)]">
               {email}
             </div>
 
@@ -178,19 +178,25 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
                 type="button"
                 role="menuitem"
                 onClick={handleCopyEmail}
-                className="keycap w-full justify-between px-3 py-2 text-left text-xs text-[#f3edf7]"
+                className="keycap w-full justify-between px-3 py-2 text-left text-xs text-[var(--theme-ink-primary)]"
               >
                 <span className="inline-flex items-center gap-2">
                   {copied ? (
-                    <LuCheck className="h-3.5 w-3.5 text-[#c6e3d1]" aria-hidden="true" />
+                    <LuCheck
+                      className="h-3.5 w-3.5 text-[var(--theme-accent-mint)]"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <LuCopy className="h-3.5 w-3.5 text-[#f3e6a2]" aria-hidden="true" />
+                    <LuCopy
+                      className="h-3.5 w-3.5 text-[var(--theme-accent-butter)]"
+                      aria-hidden="true"
+                    />
                   )}
-                  <span className={copied ? 'text-[#c6e3d1]' : ''}>
+                  <span className={copied ? 'text-[var(--theme-accent-mint)]' : ''}>
                     {copied ? 'Copied!' : 'Copy email'}
                   </span>
                 </span>
-                <span className="font-mono text-[10px] text-[#8e71a2]">
+                <span className="font-mono text-[10px] text-[var(--theme-ink-legend)]">
                   {copied ? 'OK' : 'CLIP'}
                 </span>
               </button>
@@ -202,13 +208,16 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
                   setIsOpen(false);
                   setIsPinned(false);
                 }}
-                className="keycap w-full justify-between px-3 py-2 text-left text-xs text-[#c6e3d1] no-underline"
+                className="keycap w-full justify-between px-3 py-2 text-left text-xs text-[var(--theme-accent-mint)] no-underline"
               >
                 <span className="inline-flex items-center gap-2">
                   <LuMail className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>Open mail app</span>
                 </span>
-                <LuExternalLink className="h-3 w-3 text-[#8e71a2]" aria-hidden="true" />
+                <LuExternalLink
+                  className="h-3 w-3 text-[var(--theme-ink-legend)]"
+                  aria-hidden="true"
+                />
               </a>
             </div>
           </div>

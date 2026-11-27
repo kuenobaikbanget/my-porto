@@ -29,36 +29,47 @@ export const ExperienceBento: FC = () => {
                 <div className="mb-3 flex items-start justify-between gap-2">
                   <div className="recessed-well flex h-9 w-9 items-center justify-center rounded-xl">
                     <LuBriefcase
-                      className={`h-4 w-4 ${item.current ? 'text-[#c6e3d1]' : 'text-[#cfe0f2]'}`}
+                      className={`h-4 w-4 ${
+                        item.current
+                          ? 'text-[var(--theme-accent-mint)]'
+                          : 'text-[var(--theme-accent-sky)]'
+                      }`}
                       aria-hidden="true"
                     />
                   </div>
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-[11px] font-medium ${
                       item.current
-                        ? 'border-[#c6e3d1]/40 bg-[#c6e3d1]/12 text-[#c6e3d1]'
-                        : 'border-[#3d2a54] bg-[#140c1c] text-[#b9a7c9]'
+                        ? 'border-[var(--theme-accent-mint-border)] bg-[var(--theme-accent-mint-bg)] text-[var(--theme-accent-mint)]'
+                        : 'border-[var(--theme-border)] bg-[var(--theme-well)] text-[var(--theme-ink-muted)]'
                     }`}
                   >
                     {item.current ? (
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#c6e3d1]" aria-hidden="true" />
+                      <span
+                        className="h-1.5 w-1.5 rounded-full bg-[var(--theme-accent-mint-dot)]"
+                        aria-hidden="true"
+                      />
                     ) : null}
                     {item.period}
                   </span>
                 </div>
 
-                <h3 className="font-display text-lg font-bold text-[#f3edf7]">{item.role}</h3>
-                <p className="mt-0.5 text-sm font-semibold text-[#f3e6a2]">{item.organization}</p>
-                <p className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] text-[#8e71a2]">
+                <h3 className="font-display text-lg font-bold text-[var(--theme-ink-primary)]">
+                  {item.role}
+                </h3>
+                <p className="mt-0.5 text-sm font-semibold text-[var(--theme-accent-butter)]">
+                  {item.organization}
+                </p>
+                <p className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] text-[var(--theme-ink-legend)]">
                   <LuMapPin className="h-3 w-3" aria-hidden="true" />
                   <span>{item.location}</span>
                 </p>
 
-                <ul className="mt-4 space-y-2 border-t border-[#3d2a54]/70 pt-3.5 text-xs leading-relaxed text-[#b9a7c9] sm:text-sm">
+                <ul className="mt-4 space-y-2 border-t border-[var(--theme-border)]/70 pt-3.5 text-xs leading-relaxed text-[var(--theme-ink-muted)] sm:text-sm">
                   {item.bullets.map((bullet) => (
                     <li key={bullet} className="flex items-start gap-2">
                       <span
-                        className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#cfe0f2]"
+                        className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[var(--theme-accent-sky-dot)]"
                         aria-hidden="true"
                       />
                       <span>{bullet}</span>
@@ -67,11 +78,11 @@ export const ExperienceBento: FC = () => {
                 </ul>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-[#3d2a54]/70 pt-3.5">
+              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-[var(--theme-border)]/70 pt-3.5">
                 {item.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-md border border-[#3d2a54] bg-[#140c1c] px-2 py-0.5 font-mono text-[11px] text-[#b9a7c9]"
+                    className="rounded-md border border-[var(--theme-border)] bg-[var(--theme-well)] px-2 py-0.5 font-mono text-[11px] text-[var(--theme-ink-muted)]"
                   >
                     {tag}
                   </span>
@@ -86,27 +97,34 @@ export const ExperienceBento: FC = () => {
           <div>
             <div className="mb-3 flex items-start justify-between gap-2">
               <div className="recessed-well flex h-9 w-9 items-center justify-center rounded-xl">
-                <LuGraduationCap className="h-4 w-4 text-[#f3e6a2]" aria-hidden="true" />
+                <LuGraduationCap
+                  className="h-4 w-4 text-[var(--theme-accent-butter)]"
+                  aria-hidden="true"
+                />
               </div>
-              <span className="inline-flex items-center rounded-lg border border-[#f3e6a2]/40 bg-[#f3e6a2]/12 px-2.5 py-1 font-mono text-[11px] font-semibold text-[#f3e6a2]">
+              <span className="inline-flex items-center rounded-lg border border-[var(--theme-accent-butter-border)] bg-[var(--theme-accent-butter-bg)] px-2.5 py-1 font-mono text-[11px] font-semibold text-[var(--theme-accent-butter)]">
                 GPA {educationData.gpa}
               </span>
             </div>
 
-            <p className="font-mono text-[11px] uppercase tracking-wider text-[#8e71a2]">
+            <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--theme-ink-legend)]">
               Education
             </p>
-            <h3 className="mt-1 font-display text-lg font-bold text-[#f3edf7]">
+            <h3 className="mt-1 font-display text-lg font-bold text-[var(--theme-ink-primary)]">
               {educationData.degree}
             </h3>
-            <p className="mt-1 text-sm font-semibold text-[#eed2df]">{educationData.institution}</p>
-            <p className="mt-1 font-mono text-xs text-[#8e71a2]">{educationData.period}</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--theme-accent-pink)]">
+              {educationData.institution}
+            </p>
+            <p className="mt-1 font-mono text-xs text-[var(--theme-ink-legend)]">
+              {educationData.period}
+            </p>
 
-            <ul className="mt-4 space-y-2 border-t border-[#3d2a54]/70 pt-3.5 text-xs leading-relaxed text-[#b9a7c9] sm:text-sm">
+            <ul className="mt-4 space-y-2 border-t border-[var(--theme-border)]/70 pt-3.5 text-xs leading-relaxed text-[var(--theme-ink-muted)] sm:text-sm">
               {educationData.notes.map((note) => (
                 <li key={note} className="flex items-start gap-2">
                   <span
-                    className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#f3e6a2]"
+                    className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[var(--theme-accent-butter-dot)]"
                     aria-hidden="true"
                   />
                   <span>{note}</span>
@@ -115,7 +133,7 @@ export const ExperienceBento: FC = () => {
             </ul>
           </div>
 
-          <div className="recessed-well mt-5 rounded-xl px-3 py-2.5 font-mono text-[11px] text-[#c6e3d1]">
+          <div className="recessed-well mt-5 rounded-xl px-3 py-2.5 font-mono text-[11px] text-[var(--theme-accent-mint)]">
             Status: 3rd-Year Undergraduate · Active in KSM Robotics
           </div>
         </article>

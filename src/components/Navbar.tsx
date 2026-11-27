@@ -1,8 +1,10 @@
-import { useEffect, useState, type FC } from 'react';
-import { LuMenu, LuX } from 'react-icons/lu';
+import { useEffect, useState, type FC, type MouseEvent } from 'react';
+import { LuCommand, LuMenu, LuMoon, LuSun, LuX } from 'react-icons/lu';
+import { useTheme } from '../context/useTheme';
 import { profileData } from '../data/profile';
 
 const navLinks = [
+  { id: 'activity', label: 'Activity' },
   { id: 'projects', label: 'Projects' },
   { id: 'experience', label: 'Experience' },
   { id: 'stack', label: 'Toolbox' },
@@ -10,9 +12,16 @@ const navLinks = [
   { id: 'contact', label: 'Contact' },
 ];
 
-export const Navbar: FC = () => {
+interface NavbarProps {
+  onOpenPalette: () => void;
+}
+
+export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   const [activeId, setActiveId] = useState<string>('hero');
   const [menuOpen, setMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+
+  const isAnalog = theme === 'analog-dreams';
 
   useEffect(() => {
     const sections = ['hero', ...navLinks.map((l) => l.id)]
@@ -44,43 +53,54 @@ export const Navbar: FC = () => {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  const handleToggleColorway = (event: MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const hasPointerCoords = event.clientX !== 0 || event.clientY !== 0;
+    toggleTheme({
+      x: hasPointerCoords ? event.clientX : rect.left + rect.width / 2,
+      y: hasPointerCoords ? event.clientY : rect.top + rect.height / 2,
+    });
+  };
+
   return (
-    <header className="sticky top-0 z-40 border-b border-[#3d2a54] bg-[#170e1f]/92 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-40 border-b border-[var(--theme-border)] bg-[var(--theme-header-bg)] backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6">
+        <div className="flex items-center gap-2.5">
           <a
             href="#hero"
-            className="keycap px-3 py-1.5 text-xs tracking-wide text-[#f3edf7] no-underline"
+            className="keycap px-3 py-1.5 text-xs tracking-wide text-[var(--theme-ink-primary)] no-underline"
           >
-            <span className="font-semibold text-[#eed2df]">{profileData.handle}</span>
+            <span className="font-semibold text-[var(--theme-accent-pink)]">
+              {profileData.handle}
+            </span>
           </a>
 
           {/* Windowed LED status badge */}
           <div
-            className="recessed-well hidden items-center gap-2 rounded-full px-3 py-1 lg:inline-flex"
+            className="recessed-well hidden max-w-[250px] shrink-0 items-center gap-2 rounded-full px-3 py-1 xl:inline-flex 2xl:max-w-none"
             title={profileData.statusLabel}
           >
             <span
-              className="h-2 w-2 rounded-full bg-[#c6e3d1] ring-2 ring-[#c6e3d1]/25"
+              className="h-2 w-2 shrink-0 rounded-full bg-[var(--theme-accent-mint-dot)] ring-2 ring-[var(--theme-accent-mint-border)]"
               aria-hidden="true"
             />
-            <span className="font-mono text-[11px] font-medium text-[#c6e3d1]">
+            <span className="truncate whitespace-nowrap font-mono text-[11px] font-medium text-[var(--theme-accent-mint)]">
               {profileData.statusLabel}
             </span>
           </div>
         </div>
 
-        <nav className="hidden items-center gap-2 md:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-1.5 md:flex" aria-label="Primary navigation">
           {navLinks.map((link) => {
             const isActive = activeId === link.id;
             return (
               <a
                 key={link.id}
                 href={`#${link.id}`}
-                className={`keycap px-3 py-1.5 text-xs no-underline ${
+                className={`keycap px-2.5 py-1.5 text-xs no-underline lg:px-3 ${
                   isActive
-                    ? 'border-[#8e71a2] bg-[#36254a] text-[#f3e6a2]'
-                    : 'text-[#b9a7c9]'
+                    ? 'border-[var(--theme-ink-legend)] bg-[var(--theme-keycap-active)] text-[var(--theme-accent-butter)]'
+                    : 'text-[var(--theme-ink-muted)]'
                 }`}
               >
                 {link.label}
@@ -89,10 +109,53 @@ export const Navbar: FC = () => {
           })}
         </nav>
 
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            className="keycap p-2 text-[#f3edf7]"
+            onClick={handleToggleColorway}
+            aria-label={
+              isAnalog
+                ? 'Switch colorway to Digital Nightmares (dark)'
+                : 'Switch colorway to Analog Dreams (light)'
+            }
+            title={
+              isAnalog
+                ? 'Colorway: Analog Dreams — Click for Digital Nightmares'
+                : 'Colorway: Digital Nightmares — Click for Analog Dreams'
+            }
+            className="keycap px-2.5 py-1.5 text-xs text-[var(--theme-ink-primary)]"
+          >
+            {isAnalog ? (
+              <LuSun
+                className="h-3.5 w-3.5 text-[var(--theme-accent-butter)]"
+                aria-hidden="true"
+              />
+            ) : (
+              <LuMoon
+                className="h-3.5 w-3.5 text-[var(--theme-accent-pink)]"
+                aria-hidden="true"
+              />
+            )}
+            <span className="hidden sm:inline">
+              {isAnalog ? 'Dreams' : 'Nightmares'}
+            </span>
+            <span className="sm:hidden">{isAnalog ? 'AD' : 'DN'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenPalette}
+            aria-label="Open terminal command palette (Ctrl+K or Cmd+K)"
+            title="Command Palette (⌘K / Ctrl+K)"
+            className="keycap px-2.5 py-1.5 text-xs text-[var(--theme-accent-mint)]"
+          >
+            <LuCommand className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>K</span>
+          </button>
+
+          <button
+            type="button"
+            className="keycap p-2 text-[var(--theme-ink-primary)] md:hidden"
             aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
@@ -104,11 +167,14 @@ export const Navbar: FC = () => {
 
       {menuOpen ? (
         <nav
-          className="border-t border-[#3d2a54] bg-[#22162e] px-4 py-3 md:hidden"
+          className="border-t border-[var(--theme-border)] bg-[var(--theme-housing)] px-4 py-3 md:hidden"
           aria-label="Mobile navigation"
         >
-          <div className="mb-3 flex items-center gap-2 rounded-lg bg-[#140c1c] px-3 py-2 font-mono text-[11px] text-[#c6e3d1]">
-            <span className="h-2 w-2 shrink-0 rounded-full bg-[#c6e3d1]" aria-hidden="true" />
+          <div className="recessed-well mb-3 flex items-center gap-2 rounded-lg px-3 py-2 font-mono text-[11px] text-[var(--theme-accent-mint)]">
+            <span
+              className="h-2 w-2 shrink-0 rounded-full bg-[var(--theme-accent-mint-dot)]"
+              aria-hidden="true"
+            />
             <span>{profileData.statusLabel}</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -117,7 +183,7 @@ export const Navbar: FC = () => {
                 key={link.id}
                 href={`#${link.id}`}
                 onClick={() => setMenuOpen(false)}
-                className="keycap px-3 py-2 text-xs text-[#f3edf7] no-underline"
+                className="keycap px-3 py-2 text-xs text-[var(--theme-ink-primary)] no-underline"
               >
                 {link.label}
               </a>

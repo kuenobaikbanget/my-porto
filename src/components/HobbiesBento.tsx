@@ -51,7 +51,7 @@ export const HobbiesBento: FC = () => {
                   aria-selected={isActive}
                   onClick={() => setActiveTab(cat.key)}
                   className={`keycap px-3 py-1.5 text-xs ${
-                    isActive ? 'keycap-mint' : 'text-[#b9a7c9]'
+                    isActive ? 'keycap-mint' : 'text-[var(--theme-ink-muted)]'
                   }`}
                 >
                   <span>{cat.label}</span>
@@ -61,7 +61,7 @@ export const HobbiesBento: FC = () => {
             })}
           </div>
 
-          <p className="font-mono text-xs text-[#b9a7c9]">{currentCategory.note}</p>
+          <p className="font-mono text-xs text-[var(--theme-ink-muted)]">{currentCategory.note}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -70,7 +70,7 @@ export const HobbiesBento: FC = () => {
               key={img.src}
               type="button"
               onClick={() => setLightboxImage(img)}
-              className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-xl border border-[#3d2a54] bg-[#140c1c] text-left shadow-[0_3px_0_#110a18] transition-colors hover:border-[#eed2df] focus-visible:outline-2 focus-visible:outline-[#c6e3d1]"
+              className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-xl border border-[var(--theme-border)] bg-[var(--theme-well)] text-left shadow-[0_3px_0_var(--theme-bevel)] transition-colors hover:border-[var(--theme-accent-pink-border)] focus-visible:outline-2 focus-visible:outline-[var(--theme-accent-mint)]"
               aria-label={`View larger photo: ${img.alt}`}
             >
               <img
@@ -80,7 +80,7 @@ export const HobbiesBento: FC = () => {
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
               <span
-                className="absolute right-2 bottom-2 inline-flex items-center justify-center rounded-lg border border-[#493364] bg-[#170e1f]/85 p-1.5 text-[#f3edf7] opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute right-2 bottom-2 inline-flex items-center justify-center rounded-lg border border-[var(--theme-border-strong)] bg-[var(--theme-housing)]/90 p-1.5 text-[var(--theme-ink-primary)] opacity-0 transition-opacity group-hover:opacity-100"
                 aria-hidden="true"
               >
                 <LuExpand className="h-3.5 w-3.5" />
@@ -93,7 +93,7 @@ export const HobbiesBento: FC = () => {
       {/* Lightbox Modal */}
       {lightboxImage ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0713]/85 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-backdrop)] p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label={lightboxImage.alt}
@@ -104,11 +104,13 @@ export const HobbiesBento: FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-2 flex items-center justify-between gap-4 px-1">
-              <span className="font-mono text-xs text-[#b9a7c9]">{lightboxImage.alt}</span>
+              <span className="font-mono text-xs text-[var(--theme-ink-muted)]">
+                {lightboxImage.alt}
+              </span>
               <button
                 type="button"
                 onClick={() => setLightboxImage(null)}
-                className="keycap p-1.5 text-xs text-[#f3edf7]"
+                className="keycap p-1.5 text-xs text-[var(--theme-ink-primary)]"
                 aria-label="Close photo preview"
               >
                 <LuX className="h-4 w-4" />

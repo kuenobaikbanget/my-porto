@@ -4,38 +4,190 @@
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
 
-  --color-plum-canvas: #170e1f;
-  --color-plum-housing: #22162e;
-  --color-plum-keycap: #2b1d3a;
-  --color-plum-keycap-hover: #342447;
-  --color-plum-bevel: #110a18;
-  --color-plum-border: #3d2a54;
-  --color-plum-legend: #8e71a2;
+:root,
+[data-theme="digital-nightmares"] {
+  color-scheme: dark;
 
-  --color-ink-primary: #f3edf7;
-  --color-ink-muted: #b9a7c9;
+  --theme-canvas: #170e1f;
+  --theme-dot: rgba(142, 113, 162, 0.14);
+  --theme-header-bg: rgba(23, 14, 31, 0.92);
+  --theme-housing: #22162e;
+  --theme-well: #140c1c;
+  --theme-keycap: #2b1d3a;
+  --theme-keycap-hover: #342447;
+  --theme-keycap-active: #36254a;
+  --theme-bevel: #110a18;
+  --theme-border: #3d2a54;
+  --theme-border-strong: #493364;
+  --theme-border-hover: #5b4078;
+  --theme-border-well: #302043;
+  --theme-well-shadow: rgba(0, 0, 0, 0.45);
+  --theme-keycap-highlight: rgba(243, 237, 247, 0.09);
+  --theme-housing-highlight: rgba(243, 237, 247, 0.05);
+  --theme-popover-shadow: rgba(9, 5, 14, 0.65);
+  --theme-backdrop: rgba(13, 7, 19, 0.84);
 
-  --color-pastel-mint: #c6e3d1;
-  --color-pastel-mint-bevel: #7fa790;
-  --color-pastel-butter: #f3e6a2;
-  --color-pastel-pink: #eed2df;
-  --color-pastel-sky: #cfe0f2;
+  --theme-ink-primary: #f3edf7;
+  --theme-ink-muted: #b9a7c9;
+  --theme-ink-legend: #9d82b3;
+
+  --theme-accent-mint: #c6e3d1;
+  --theme-accent-mint-dot: #c6e3d1;
+  --theme-accent-mint-bg: rgba(198, 227, 209, 0.12);
+  --theme-accent-mint-border: rgba(198, 227, 209, 0.4);
+
+  --theme-accent-butter: #f3e6a2;
+  --theme-accent-butter-dot: #f3e6a2;
+  --theme-accent-butter-bg: rgba(243, 230, 162, 0.12);
+  --theme-accent-butter-border: rgba(243, 230, 162, 0.4);
+
+  --theme-accent-pink: #eed2df;
+  --theme-accent-pink-dot: #eed2df;
+  --theme-accent-pink-bg: rgba(238, 210, 223, 0.12);
+  --theme-accent-pink-border: rgba(238, 210, 223, 0.4);
+
+  --theme-accent-sky: #cfe0f2;
+  --theme-accent-sky-dot: #cfe0f2;
+  --theme-accent-sky-bg: rgba(207, 224, 242, 0.12);
+  --theme-accent-sky-border: rgba(207, 224, 242, 0.4);
+
+  --theme-keycap-mint-bg: #c6e3d1;
+  --theme-keycap-mint-hover: #d6ede0;
+  --theme-keycap-mint-ink: #170e1f;
+  --theme-keycap-mint-border: #d9efe1;
+  --theme-keycap-mint-bevel: #7fa790;
+
+  --theme-keycap-butter-bg: #f3e6a2;
+  --theme-keycap-butter-hover: #f7eeb8;
+  --theme-keycap-butter-ink: #170e1f;
+  --theme-keycap-butter-border: #faf2c8;
+  --theme-keycap-butter-bevel: #9f925a;
+
+  --theme-terminal-bg: #170e1f;
+  --theme-terminal-bar: #1d1228;
+  --theme-terminal-footer: #140c1c;
+  --theme-terminal-border: #3d2a54;
+  --theme-terminal-shadow: rgba(0, 0, 0, 0.5);
+  --theme-cat-bubble-bg: #2b1d3a;
+  --theme-cat-angry-bubble-bg: #362039;
+
+  --theme-selection-bg: #c6e3d1;
+  --theme-selection-ink: #170e1f;
+
+  --theme-led-0: #1e1329;
+  --theme-led-1: #355248;
+  --theme-led-2: #548673;
+  --theme-led-3: #83baa3;
+  --theme-led-4: #c6e3d1;
+  --theme-led-4-glow: 0 0 6px rgba(198, 227, 209, 0.48);
+}
+
+[data-theme="analog-dreams"] {
+  color-scheme: light;
+
+  --theme-canvas: #f3efe7;
+  --theme-dot: rgba(94, 70, 118, 0.14);
+  --theme-header-bg: rgba(243, 239, 231, 0.9);
+  --theme-housing: #fbf8f3;
+  --theme-well: #ebe4d9;
+  --theme-keycap: #f7f3ec;
+  --theme-keycap-hover: #efe8dc;
+  --theme-keycap-active: #e6dcf0;
+  --theme-bevel: #c5b9cf;
+  --theme-border: #d5cadc;
+  --theme-border-strong: #c6b8d1;
+  --theme-border-hover: #977eb0;
+  --theme-border-well: #cfc3d8;
+  --theme-well-shadow: rgba(45, 28, 62, 0.1);
+  --theme-keycap-highlight: rgba(255, 255, 255, 0.9);
+  --theme-housing-highlight: rgba(255, 255, 255, 0.8);
+  --theme-popover-shadow: rgba(35, 23, 48, 0.16);
+  --theme-backdrop: rgba(34, 22, 46, 0.48);
+
+  --theme-ink-primary: #22162e;
+  --theme-ink-muted: #4b3a5e;
+  --theme-ink-legend: #66507d;
+
+  --theme-accent-mint: #166852;
+  --theme-accent-mint-dot: #2b8a6f;
+  --theme-accent-mint-bg: #d9efe3;
+  --theme-accent-mint-border: #8dc2a8;
+
+  --theme-accent-butter: #725209;
+  --theme-accent-butter-dot: #b08318;
+  --theme-accent-butter-bg: #f6ebc0;
+  --theme-accent-butter-border: #cfb667;
+
+  --theme-accent-pink: #873258;
+  --theme-accent-pink-dot: #b5547e;
+  --theme-accent-pink-bg: #f2d9e4;
+  --theme-accent-pink-border: #cf96b0;
+
+  --theme-accent-sky: #2d5582;
+  --theme-accent-sky-dot: #4b7db3;
+  --theme-accent-sky-bg: #dce8f5;
+  --theme-accent-sky-border: #95b5d8;
+
+  --theme-keycap-mint-bg: #bfe2cf;
+  --theme-keycap-mint-hover: #b0dac3;
+  --theme-keycap-mint-ink: #132922;
+  --theme-keycap-mint-border: #8ec1a6;
+  --theme-keycap-mint-bevel: #6da085;
+
+  --theme-keycap-butter-bg: #f3e4a4;
+  --theme-keycap-butter-hover: #ecda8e;
+  --theme-keycap-butter-ink: #291e06;
+  --theme-keycap-butter-border: #ceb866;
+  --theme-keycap-butter-bevel: #a69145;
+
+  --theme-terminal-bg: #efe9f2;
+  --theme-terminal-bar: #e4dbe9;
+  --theme-terminal-footer: #e7dfd0;
+  --theme-terminal-border: #c9bbd4;
+  --theme-terminal-shadow: rgba(45, 28, 62, 0.12);
+  --theme-cat-bubble-bg: #fbf8f3;
+  --theme-cat-angry-bubble-bg: #f5dce6;
+
+  --theme-selection-bg: #d9efe3;
+  --theme-selection-ink: #132922;
+
+  --theme-led-0: #dfd6e5;
+  --theme-led-1: #b4d8c6;
+  --theme-led-2: #76b698;
+  --theme-led-3: #398c6b;
+  --theme-led-4: #166852;
+  --theme-led-4-glow: 0 0 6px rgba(22, 104, 82, 0.25);
+}
+
+/* View Transitions API — Radial Wipe */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
-    color-scheme: dark;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: var(--color-plum-canvas);
-    background-image: radial-gradient(rgba(142, 113, 162, 0.14) 1px, transparent 1px);
+    background-color: var(--theme-canvas);
+    background-image: radial-gradient(var(--theme-dot) 1px, transparent 1px);
     background-size: 20px 20px;
-    color: var(--color-ink-primary);
+    color: var(--theme-ink-primary);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -47,13 +199,13 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    color: var(--color-ink-primary);
+    color: var(--theme-ink-primary);
     letter-spacing: -0.02em;
   }
 
   ::selection {
-    background-color: #c6e3d1;
-    color: #170e1f;
+    background-color: var(--theme-selection-bg);
+    color: var(--theme-selection-ink);
   }
 
   ::-webkit-scrollbar {
@@ -61,40 +213,40 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #170e1f;
+    background: var(--theme-canvas);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #3d2a54;
+    background: var(--theme-border);
     border-radius: 9999px;
-    border: 2px solid #170e1f;
+    border: 2px solid var(--theme-canvas);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #8e71a2;
+    background: var(--theme-ink-legend);
   }
 }
 
 /* Tactile Bento Board Housing */
 .bento-card {
-  background-color: var(--color-plum-housing);
-  border: 1px solid var(--color-plum-border);
+  background-color: var(--theme-housing);
+  border: 1px solid var(--theme-border);
   border-radius: 18px;
   box-shadow:
-    inset 0 1px 0 rgba(243, 237, 247, 0.05),
-    0 6px 0 #110a18;
+    inset 0 1px 0 var(--theme-housing-highlight),
+    0 6px 0 var(--theme-bevel);
   transition: border-color 180ms ease, transform 180ms ease;
 }
 
 .bento-card:hover {
-  border-color: #5b4078;
+  border-color: var(--theme-border-hover);
 }
 
 /* Recessed Windowed Well (for LED badges & keyboard wells) */
 .recessed-well {
-  background-color: #140c1c;
-  border: 1px solid #302043;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
+  background-color: var(--theme-well);
+  border: 1px solid var(--theme-border-well);
+  box-shadow: inset 0 2px 4px var(--theme-well-shadow);
 }
 
 /* Tactile Double-Shot Keycap Button */
@@ -104,14 +256,14 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: var(--color-plum-keycap);
-  color: var(--color-ink-primary);
-  border: 1px solid #493364;
+  background-color: var(--theme-keycap);
+  color: var(--theme-ink-primary);
+  border: 1px solid var(--theme-border-strong);
   border-bottom-width: 1px;
   border-radius: 10px;
   box-shadow:
-    inset 0 1px 0 rgba(243, 237, 247, 0.09),
-    0 3px 0 #110a18;
+    inset 0 1px 0 var(--theme-keycap-highlight),
+    0 3px 0 var(--theme-bevel);
   font-family: var(--font-mono);
   font-weight: 500;
   cursor: pointer;
@@ -125,67 +277,67 @@
 }
 
 .keycap:hover {
-  background-color: var(--color-plum-keycap-hover);
-  border-color: #8e71a2;
+  background-color: var(--theme-keycap-hover);
+  border-color: var(--theme-ink-legend);
 }
 
 .keycap:active,
 .keycap[data-pressed="true"] {
   transform: translateY(2px);
   box-shadow:
-    inset 0 1px 0 rgba(243, 237, 247, 0.06),
-    0 1px 0 #110a18;
+    inset 0 1px 0 var(--theme-housing-highlight),
+    0 1px 0 var(--theme-bevel);
 }
 
 .keycap:focus-visible {
-  outline: 2px solid var(--color-pastel-mint);
+  outline: 2px solid var(--theme-accent-mint);
   outline-offset: 2px;
 }
 
 /* Mint Accent Keycap (Primary CTA) */
 .keycap-mint {
-  background-color: var(--color-pastel-mint);
-  color: #170e1f;
-  border: 1px solid #d9efe1;
+  background-color: var(--theme-keycap-mint-bg);
+  color: var(--theme-keycap-mint-ink);
+  border: 1px solid var(--theme-keycap-mint-border);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 3px 0 #7fa790;
+    0 3px 0 var(--theme-keycap-mint-bevel);
   font-weight: 600;
 }
 
 .keycap-mint:hover {
-  background-color: #d6ede0;
-  border-color: #edf7f1;
+  background-color: var(--theme-keycap-mint-hover);
+  border-color: var(--theme-keycap-mint-border);
 }
 
 .keycap-mint:active {
   transform: translateY(2px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 1px 0 #7fa790;
+    0 1px 0 var(--theme-keycap-mint-bevel);
 }
 
 /* Butter Yellow Accent Keycap (Active filter / highlight) */
 .keycap-butter {
-  background-color: var(--color-pastel-butter);
-  color: #170e1f;
-  border: 1px solid #faf2c8;
+  background-color: var(--theme-keycap-butter-bg);
+  color: var(--theme-keycap-butter-ink);
+  border: 1px solid var(--theme-keycap-butter-border);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 3px 0 #9f925a;
+    0 3px 0 var(--theme-keycap-butter-bevel);
   font-weight: 600;
 }
 
 .keycap-butter:hover {
-  background-color: #f7eeb8;
-  border-color: #fcf7da;
+  background-color: var(--theme-keycap-butter-hover);
+  border-color: var(--theme-keycap-butter-border);
 }
 
 .keycap-butter:active {
   transform: translateY(2px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 1px 0 #9f925a;
+    0 1px 0 var(--theme-keycap-butter-bevel);
 }
 
 /* Scroll reveal animation */

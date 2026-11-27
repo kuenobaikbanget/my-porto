@@ -1,14 +1,24 @@
-import { useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { useAsciiReveal } from 'ascii-reveal';
 import { skillCategories, skillsData, type SkillCategoryKey } from '../data/skills';
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 import { SectionHeader } from './SectionHeader';
 import { SkillKeycap } from './SkillKeycap';
 
+const categoryLegendCssColor: Record<SkillCategoryKey, string> = {
+  all: 'var(--theme-ink-primary)',
+  iot: 'var(--theme-accent-butter)',
+  linux: 'var(--theme-accent-sky)',
+  dev: 'var(--theme-accent-mint)',
+  security: 'var(--theme-accent-pink)',
+};
+
 export const TechStackBento: FC = () => {
   const [activeCategory, setActiveCategory] = useState<SkillCategoryKey>('all');
   const [renderedCategory, setRenderedCategory] = useState<SkillCategoryKey>('all');
+  const [gridHeight, setGridHeight] = useState<number | null>(null);
   const hasFilteredRef = useRef(false);
+  const gridInnerRef = useRef<HTMLDivElement | null>(null);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
 
   const {
@@ -20,8 +30,36 @@ export const TechStackBento: FC = () => {
     duration: 'cinematic',
     speed: 1.25,
     origin: 'top-left',
+    selector: '[data-skill-grid-item]',
     revealOnMount: false,
   });
+
+  const setGridNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      gridInnerRef.current = node;
+      gridRef(node);
+    },
+    [gridRef],
+  );
+
+  useEffect(() => {
+    const el = gridInnerRef.current;
+    if (!el) return;
+
+    const updateHeight = () => {
+      const nextHeight = Math.ceil(el.getBoundingClientRect().height);
+      if (nextHeight > 0) {
+        setGridHeight(nextHeight);
+      }
+    };
+
+    updateHeight();
+
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (activeCategory === renderedCategory) return;
@@ -83,12 +121,12 @@ export const TechStackBento: FC = () => {
                 aria-selected={isActive}
                 onClick={() => setActiveCategory(cat.key)}
                 className={`keycap px-3 py-1.5 text-xs ${
-                  isActive ? 'keycap-butter' : 'text-[#b9a7c9]'
+                  isActive ? 'keycap-butter' : 'text-[var(--theme-ink-muted)]'
                 }`}
               >
                 <span
-                  className="text-[10px] opacity-75"
-                  style={!isActive ? { color: cat.accentHex } : undefined}
+                  className="text-[10px] opacity-85"
+                  style={!isActive ? { color: categoryLegendCssColor[cat.key] } : undefined}
                 >
                   [{cat.legend}]
                 </span>
@@ -98,11 +136,16 @@ export const TechStackBento: FC = () => {
           })}
         </div>
 
-        {/* Bento Keycap Matrix — each keycap sizes to its own label */}
-        <div ref={gridRef} className="flex flex-wrap gap-2.5">
-          {filteredSkills.map((skill) => (
-            <SkillKeycap key={`${skill.category}-${skill.name}`} skill={skill} />
-          ))}
+        {/* Bento Keycap Matrix — smooth height transition when filtering/resizing */}
+        <div
+          className="overflow-hidden transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+          style={gridHeight !== null ? { height: `${gridHeight}px` } : undefined}
+        >
+          <div ref={setGridNode} className="flex flex-wrap gap-2.5 pb-1">
+            {filteredSkills.map((skill) => (
+              <SkillKeycap key={`${skill.category}-${skill.name}`} skill={skill} />
+            ))}
+          </div>
         </div>
       </div>
     </section>

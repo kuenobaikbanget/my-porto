@@ -27,11 +27,12 @@ const stages: CatStage[] = [
     bubble: 'zzz...',
     intervalMs: 680,
     reactionType: 'hop',
-    badgeClass: 'text-[#b9a7c9]',
-    bubbleClass: 'border-[#493364] bg-[#2b1d3a] text-[#cfe0f2]',
-    artClass: 'text-[#b9a7c9]',
-    logClass: 'text-[#8e71a2]',
-    terminalBorderClass: 'border-[#3d2a54]',
+    badgeClass: 'text-[var(--theme-ink-muted)]',
+    bubbleClass:
+      'border-[var(--theme-border-strong)] bg-[var(--theme-cat-bubble-bg)] text-[var(--theme-accent-sky)]',
+    artClass: 'text-[var(--theme-ink-muted)]',
+    logClass: 'text-[var(--theme-ink-legend)]',
+    terminalBorderClass: 'border-[var(--theme-terminal-border)]',
     formatLog: (pokes) =>
       pokes === 0 ? 'idle: cat sleeping on deskmat' : `poke #${pokes}: reset -> sleeping`,
     frames: [
@@ -61,11 +62,12 @@ const stages: CatStage[] = [
     bubble: 'meow',
     intervalMs: 540,
     reactionType: 'hop',
-    badgeClass: 'text-[#c6e3d1]',
-    bubbleClass: 'border-[#c6e3d1]/45 bg-[#2b1d3a] text-[#c6e3d1]',
-    artClass: 'text-[#f3edf7]',
-    logClass: 'text-[#c6e3d1]',
-    terminalBorderClass: 'border-[#493364]',
+    badgeClass: 'text-[var(--theme-accent-mint)]',
+    bubbleClass:
+      'border-[var(--theme-accent-mint-border)] bg-[var(--theme-cat-bubble-bg)] text-[var(--theme-accent-mint)]',
+    artClass: 'text-[var(--theme-ink-primary)]',
+    logClass: 'text-[var(--theme-accent-mint)]',
+    terminalBorderClass: 'border-[var(--theme-border-strong)]',
     formatLog: (pokes) => `poke #${pokes}: "meow"`,
     frames: [
       [
@@ -94,11 +96,12 @@ const stages: CatStage[] = [
     bubble: 'meow meow',
     intervalMs: 480,
     reactionType: 'hop',
-    badgeClass: 'text-[#f3e6a2]',
-    bubbleClass: 'border-[#f3e6a2]/45 bg-[#2b1d3a] text-[#f3e6a2]',
-    artClass: 'text-[#f3edf7]',
-    logClass: 'text-[#f3e6a2]',
-    terminalBorderClass: 'border-[#f3e6a2]/35',
+    badgeClass: 'text-[var(--theme-accent-butter)]',
+    bubbleClass:
+      'border-[var(--theme-accent-butter-border)] bg-[var(--theme-cat-bubble-bg)] text-[var(--theme-accent-butter)]',
+    artClass: 'text-[var(--theme-ink-primary)]',
+    logClass: 'text-[var(--theme-accent-butter)]',
+    terminalBorderClass: 'border-[var(--theme-accent-butter-border)]',
     formatLog: (pokes) => `poke #${pokes}: "meow meow"`,
     frames: [
       [
@@ -127,11 +130,12 @@ const stages: CatStage[] = [
     bubble: 'meow?! stop poking',
     intervalMs: 420,
     reactionType: 'shake',
-    badgeClass: 'text-[#eed2df]',
-    bubbleClass: 'border-[#eed2df]/50 bg-[#2b1d3a] text-[#eed2df]',
-    artClass: 'text-[#eed2df]',
-    logClass: 'text-[#f3e6a2]',
-    terminalBorderClass: 'border-[#eed2df]/45',
+    badgeClass: 'text-[var(--theme-accent-pink)]',
+    bubbleClass:
+      'border-[var(--theme-accent-pink-border)] bg-[var(--theme-cat-bubble-bg)] text-[var(--theme-accent-pink)]',
+    artClass: 'text-[var(--theme-accent-pink)]',
+    logClass: 'text-[var(--theme-accent-butter)]',
+    terminalBorderClass: 'border-[var(--theme-accent-pink-border)]',
     formatLog: (pokes) => `poke #${pokes}: WARN: stop poking`,
     frames: [
       [
@@ -160,11 +164,12 @@ const stages: CatStage[] = [
     bubble: 'HISSS!! >:(',
     intervalMs: 280,
     reactionType: 'shake',
-    badgeClass: 'text-[#eed2df]',
-    bubbleClass: 'border-[#eed2df]/75 bg-[#362039] text-[#f3e6a2]',
-    artClass: 'text-[#f3e6a2]',
-    logClass: 'text-[#eed2df]',
-    terminalBorderClass: 'border-[#eed2df]/65',
+    badgeClass: 'text-[var(--theme-accent-pink)]',
+    bubbleClass:
+      'border-[var(--theme-accent-pink-border)] bg-[var(--theme-cat-angry-bubble-bg)] text-[var(--theme-accent-butter)]',
+    artClass: 'text-[var(--theme-accent-butter)]',
+    logClass: 'text-[var(--theme-accent-pink)]',
+    terminalBorderClass: 'border-[var(--theme-accent-pink-border)]',
     formatLog: (pokes) => `poke #${pokes}: ERR: HISSS!! >:(`,
     frames: [
       [
@@ -236,7 +241,7 @@ export const TuxedoCatWidget: FC = () => {
         <span className={`font-mono text-[11px] font-medium ${current.badgeClass}`}>
           {current.code}
         </span>
-        <span className="recessed-well rounded-md px-2 py-0.5 font-mono text-[11px] text-[#f3e6a2]">
+        <span className="recessed-well rounded-md px-2 py-0.5 font-mono text-[11px] text-[var(--theme-accent-butter)]">
           POKE ×{pokes}
         </span>
       </div>
@@ -246,17 +251,17 @@ export const TuxedoCatWidget: FC = () => {
         type="button"
         onClick={handleInteract}
         aria-label={`Interactive terminal cat, currently ${current.mood}: ${current.bubble}. Click to interact.`}
-        className={`group my-4 flex flex-1 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border bg-[#170e1f] text-left shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)] transition-colors hover:border-[#8e71a2] focus-visible:outline-2 focus-visible:outline-[#c6e3d1] ${current.terminalBorderClass}`}
+        className={`group my-4 flex flex-1 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border bg-[var(--theme-terminal-bg)] text-left shadow-[inset_0_2px_6px_var(--theme-terminal-shadow)] transition-colors hover:border-[var(--theme-ink-legend)] focus-visible:outline-2 focus-visible:outline-[var(--theme-accent-mint)] ${current.terminalBorderClass}`}
       >
         {/* Terminal Title Bar */}
-        <div className="flex items-center justify-between border-b border-[#302043] bg-[#1d1228] px-3 py-2 font-mono text-[10px] text-[#8e71a2]">
+        <div className="flex items-center justify-between border-b border-[var(--theme-border-well)] bg-[var(--theme-terminal-bar)] px-3 py-2 font-mono text-[10px] text-[var(--theme-ink-legend)]">
           <div className="flex items-center gap-1.5" aria-hidden="true">
-            <span className="h-2 w-2 rounded-full bg-[#eed2df]/75" />
-            <span className="h-2 w-2 rounded-full bg-[#f3e6a2]/75" />
-            <span className="h-2 w-2 rounded-full bg-[#c6e3d1]/75" />
+            <span className="h-2 w-2 rounded-full bg-[var(--theme-accent-pink-dot)] opacity-80" />
+            <span className="h-2 w-2 rounded-full bg-[var(--theme-accent-butter-dot)] opacity-80" />
+            <span className="h-2 w-2 rounded-full bg-[var(--theme-accent-mint-dot)] opacity-80" />
           </div>
-          <span className="inline-flex items-center gap-1 text-[#b9a7c9]">
-            <LuTerminal className="h-3 w-3 text-[#8e71a2]" aria-hidden="true" />
+          <span className="inline-flex items-center gap-1 text-[var(--theme-ink-muted)]">
+            <LuTerminal className="h-3 w-3 text-[var(--theme-ink-legend)]" aria-hidden="true" />
             <span>~/cat.tty</span>
           </span>
         </div>
@@ -265,11 +270,11 @@ export const TuxedoCatWidget: FC = () => {
         <div className="flex flex-1 flex-col items-center justify-center px-3 py-4">
           <div
             key={`bubble-${stageIndex}-${pokes}`}
-            className={`mb-2.5 inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs font-medium shadow-[0_2px_0_#110a18] ${
+            className={`mb-2.5 inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs font-medium shadow-[0_2px_0_var(--theme-bevel)] ${
               pokes > 0 ? 'bubble-pop' : ''
             } ${current.bubbleClass}`}
           >
-            <span className="text-[#8e71a2]" aria-hidden="true">
+            <span className="text-[var(--theme-ink-legend)]" aria-hidden="true">
               $
             </span>
             <span className="truncate">{current.bubble}</span>
@@ -286,16 +291,16 @@ export const TuxedoCatWidget: FC = () => {
         </div>
 
         {/* Live Terminal Log & Prompt Footer */}
-        <div className="border-t border-[#302043]/80 bg-[#140c1c] px-3 py-2 font-mono text-[11px] leading-snug">
+        <div className="border-t border-[var(--theme-border-well)]/80 bg-[var(--theme-terminal-footer)] px-3 py-2 font-mono text-[11px] leading-snug">
           <div className={`truncate ${current.logClass}`}>
-            <span className="text-[#8e71a2]" aria-hidden="true">
+            <span className="text-[var(--theme-ink-legend)]" aria-hidden="true">
               &gt;{' '}
             </span>
             <span>{current.formatLog(pokes)}</span>
           </div>
-          <div className="mt-0.5 flex items-center text-[#8e71a2]">
+          <div className="mt-0.5 flex items-center text-[var(--theme-ink-legend)]">
             <span>kueno@tty:~$&nbsp;</span>
-            <span className="tty-cursor text-[#c6e3d1]" aria-hidden="true">
+            <span className="tty-cursor text-[var(--theme-accent-mint)]" aria-hidden="true">
               █
             </span>
           </div>
@@ -304,7 +309,7 @@ export const TuxedoCatWidget: FC = () => {
 
       {/* Bottom Deskmat Tag */}
       <div className="flex items-center justify-end font-mono text-[11px]">
-        <span className="text-[#8e71a2]">click</span>
+        <span className="text-[var(--theme-ink-legend)]">click</span>
       </div>
     </div>
   );

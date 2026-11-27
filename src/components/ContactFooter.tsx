@@ -9,11 +9,13 @@ export const ContactFooter: FC = () => {
       <div className="bento-card p-6 sm:p-8">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
-            <p className="font-mono text-xs tracking-wider text-[#8e71a2]">GET IN TOUCH</p>
-            <h2 className="mt-1 font-display text-2xl font-bold text-[#f3edf7] sm:text-3xl">
+            <p className="font-mono text-xs tracking-wider text-[var(--theme-ink-legend)]">
+              GET IN TOUCH
+            </p>
+            <h2 className="mt-1 font-display text-2xl font-bold text-[var(--theme-ink-primary)] sm:text-3xl">
               Let&apos;s build dependable systems.
             </h2>
-            <p className="mt-2 max-w-xl text-sm text-[#b9a7c9]">
+            <p className="mt-2 max-w-xl text-sm text-[var(--theme-ink-muted)]">
               Open to internships, Linux/networking ops, IoT prototyping, and practical software
               engineering roles. Reach me directly via email or LinkedIn.
             </p>
@@ -29,13 +31,13 @@ export const ContactFooter: FC = () => {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col items-start justify-between gap-4 border-t border-[#3d2a54]/80 pt-5 sm:flex-row sm:items-center">
+        <div className="mt-6 flex flex-col items-start justify-between gap-4 border-t border-[var(--theme-border)]/80 pt-5 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-2">
             <a
               href={profileData.socials.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="keycap px-3 py-1.5 text-xs text-[#f3edf7] no-underline"
+              className="keycap px-3 py-1.5 text-xs text-[var(--theme-ink-primary)] no-underline"
             >
               <LuGithub className="h-3.5 w-3.5" aria-hidden="true" />
               <span>GitHub</span>
@@ -44,7 +46,7 @@ export const ContactFooter: FC = () => {
               href={profileData.socials.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="keycap px-3 py-1.5 text-xs text-[#cfe0f2] no-underline"
+              className="keycap px-3 py-1.5 text-xs text-[var(--theme-accent-sky)] no-underline"
             >
               <LuLinkedin className="h-3.5 w-3.5" aria-hidden="true" />
               <span>LinkedIn</span>
@@ -53,16 +55,16 @@ export const ContactFooter: FC = () => {
               href={profileData.socials.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="keycap px-3 py-1.5 text-xs text-[#eed2df] no-underline"
+              className="keycap px-3 py-1.5 text-xs text-[var(--theme-accent-pink)] no-underline"
             >
               <LuInstagram className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Instagram</span>
             </a>
           </div>
 
-          <p className="font-mono text-[11px] text-[#8e71a2]">
+          <p className="font-mono text-[11px] text-[var(--theme-ink-legend)]">
             © 2026 {profileData.name} ·{' '}
-            <span className="text-[#b9a7c9]">kueno.web.id</span>
+            <span className="text-[var(--theme-ink-muted)]">kueno.web.id</span>
           </p>
         </div>
       </div>

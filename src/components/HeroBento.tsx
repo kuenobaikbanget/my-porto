@@ -19,7 +19,7 @@ export const HeroBento: FC = () => {
           <div>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3.5">
-                <div className="shrink-0 rounded-2xl border border-[#493364] bg-[#140c1c] p-1 shadow-[0_3px_0_#110a18]">
+                <div className="shrink-0 rounded-2xl border border-[var(--theme-border-strong)] bg-[var(--theme-well)] p-1 shadow-[0_3px_0_var(--theme-bevel)]">
                   <img
                     src={profileData.avatarSrc}
                     alt={`${profileData.name} portrait`}
@@ -29,17 +29,17 @@ export const HeroBento: FC = () => {
                   />
                 </div>
                 <div>
-                  <h1 className="font-display text-2xl font-bold tracking-tight text-[#f3edf7] sm:text-4xl">
+                  <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--theme-ink-primary)] sm:text-4xl">
                     {profileData.name}
                   </h1>
-                  <p className="mt-0.5 font-mono text-xs font-medium text-[#f3e6a2] sm:text-sm">
+                  <p className="mt-0.5 font-mono text-xs font-medium text-[var(--theme-accent-butter)] sm:text-sm">
                     {profileData.headline}
                   </p>
                 </div>
               </div>
 
-              <div className="recessed-well inline-flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-xs text-[#f3e6a2]">
-                <span className="text-[#8e71a2]">GPA</span>
+              <div className="recessed-well inline-flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-xs text-[var(--theme-accent-butter)]">
+                <span className="text-[var(--theme-ink-legend)]">GPA</span>
                 <span className="font-semibold">{profileData.gpa}</span>
               </div>
             </div>
@@ -49,10 +49,10 @@ export const HeroBento: FC = () => {
               {profileData.focusPills.map((pill, idx) => {
                 const pillTone =
                   idx === 0
-                    ? 'border-[#f3e6a2]/35 bg-[#f3e6a2]/10 text-[#f3e6a2]'
+                    ? 'border-[var(--theme-accent-butter-border)] bg-[var(--theme-accent-butter-bg)] text-[var(--theme-accent-butter)]'
                     : idx === 1
-                      ? 'border-[#cfe0f2]/35 bg-[#cfe0f2]/10 text-[#cfe0f2]'
-                      : 'border-[#c6e3d1]/35 bg-[#c6e3d1]/10 text-[#c6e3d1]';
+                      ? 'border-[var(--theme-accent-sky-border)] bg-[var(--theme-accent-sky-bg)] text-[var(--theme-accent-sky)]'
+                      : 'border-[var(--theme-accent-mint-border)] bg-[var(--theme-accent-mint-bg)] text-[var(--theme-accent-mint)]';
                 return (
                   <span
                     key={pill}
@@ -64,22 +64,28 @@ export const HeroBento: FC = () => {
               })}
             </div>
 
-            <p className="max-w-2xl text-sm leading-relaxed text-[#b9a7c9] sm:text-base">
+            <p className="max-w-2xl text-sm leading-relaxed text-[var(--theme-ink-muted)] sm:text-base">
               {profileData.summary}
             </p>
           </div>
 
-          <div className="mt-6 border-t border-[#3d2a54]/80 pt-5">
+          <div className="mt-6 border-t border-[var(--theme-border)]/80 pt-5">
             {/* Compact Academic & Location Bar */}
-            <div className="mb-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-xs text-[#b9a7c9]">
+            <div className="mb-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-xs text-[var(--theme-ink-muted)]">
               <span className="inline-flex items-center gap-1.5">
-                <LuGraduationCap className="h-3.5 w-3.5 text-[#eed2df]" aria-hidden="true" />
+                <LuGraduationCap
+                  className="h-3.5 w-3.5 text-[var(--theme-accent-pink)]"
+                  aria-hidden="true"
+                />
                 <span>
                   {profileData.degree} · {profileData.university}
                 </span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <LuMapPin className="h-3.5 w-3.5 text-[#c6e3d1]" aria-hidden="true" />
+                <LuMapPin
+                  className="h-3.5 w-3.5 text-[var(--theme-accent-mint)]"
+                  aria-hidden="true"
+                />
                 <span>{profileData.location}</span>
               </span>
             </div>
@@ -107,7 +113,7 @@ export const HeroBento: FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="GitHub profile"
-                  className="keycap p-2.5 text-[#f3edf7] no-underline"
+                  className="keycap p-2.5 text-[var(--theme-ink-primary)] no-underline"
                 >
                   <LuGithub className="h-4 w-4" />
                 </a>
@@ -116,7 +122,7 @@ export const HeroBento: FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn profile"
-                  className="keycap p-2.5 text-[#cfe0f2] no-underline"
+                  className="keycap p-2.5 text-[var(--theme-accent-sky)] no-underline"
                 >
                   <LuLinkedin className="h-4 w-4" />
                 </a>
