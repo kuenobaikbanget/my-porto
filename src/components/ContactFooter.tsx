@@ -111,7 +111,7 @@ export const ContactFooter: FC = () => {
 
           <p className="font-mono text-[11px] text-[#8e71a2]">
             © 2026 {profileData.name} ·{' '}
-            <span className="text-[#b9a7c9]">kueno.web.id</span> · Digital Nightmares Bento
+            <span className="text-[#b9a7c9]">kueno.web.id</span>
           </p>
         </div>
       </div>
