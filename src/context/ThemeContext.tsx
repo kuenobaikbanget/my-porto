@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FC, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import {
   THEME_STORAGE_KEY,
@@ -123,8 +123,13 @@ export const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
     [setTheme, theme],
   );
 
+  const contextValue = useMemo(
+    () => ({ theme, setTheme, toggleTheme }),
+    [theme, setTheme, toggleTheme],
+  );
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

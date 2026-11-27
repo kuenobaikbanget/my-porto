@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type FC, type KeyboardEvent } from 'react';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FC,
+  type KeyboardEvent,
+} from 'react';
 import { LuArrowUpRight, LuGithub } from 'react-icons/lu';
 import {
   buildFallbackContributions,
@@ -28,16 +37,25 @@ const ledLevelStyles: Record<ContributionLevel, string> = {
   4: 'bg-[var(--theme-led-4)] border-transparent shadow-[var(--theme-led-4-glow)]',
 };
 
+// Shared formatter + cache avoids creating 364 Intl.DateTimeFormat instances per hover
+const contributionDateFormatter = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'UTC',
+  weekday: 'short',
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+const formattedDateCache = new Map<string, string>();
+
 function formatContributionDate(isoDate: string): string {
+  const cached = formattedDateCache.get(isoDate);
+  if (cached) return cached;
+
   const parsed = new Date(`${isoDate}T12:00:00Z`);
   if (Number.isNaN(parsed.getTime())) return isoDate;
-  return new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'UTC',
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(parsed);
+  const formatted = contributionDateFormatter.format(parsed);
+  formattedDateCache.set(isoDate, formatted);
+  return formatted;
 }
 
 function normalizeLevel(rawLevel: unknown, count: number): ContributionLevel {
@@ -61,6 +79,52 @@ interface GridCoord {
   row: number;
   col: number;
 }
+
+interface LedCellProps {
+  day: ContributionDay;
+  formattedDate: string;
+  row: number;
+  col: number;
+  isSelected: boolean;
+  isRovingActive: boolean;
+  onHover: (day: ContributionDay) => void;
+  onActivate: (day: ContributionDay, row: number, col: number) => void;
+  onCellKeyDown: (event: KeyboardEvent<HTMLButtonElement>, row: number, col: number) => void;
+}
+
+const LedCell: FC<LedCellProps> = memo(
+  ({
+    day,
+    formattedDate,
+    row,
+    col,
+    isSelected,
+    isRovingActive,
+    onHover,
+    onActivate,
+    onCellKeyDown,
+  }) => (
+    <div role="gridcell" className="flex">
+      <button
+        type="button"
+        tabIndex={isRovingActive ? 0 : -1}
+        data-grid-row={row}
+        data-grid-col={col}
+        onMouseEnter={() => onHover(day)}
+        onFocus={() => onActivate(day, row, col)}
+        onClick={() => onActivate(day, row, col)}
+        onKeyDown={(e) => onCellKeyDown(e, row, col)}
+        aria-label={`${formattedDate}: ${day.count} contributions`}
+        aria-pressed={isSelected}
+        className={`h-7 w-7 cursor-pointer rounded-[4px] border transition-transform duration-100 hover:scale-125 focus-visible:scale-125 focus-visible:outline-2 focus-visible:outline-[var(--theme-ink-primary)] motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-visible:scale-100 sm:aspect-square sm:h-auto sm:w-full ${
+          ledLevelStyles[day.level]
+        } ${isSelected ? 'ring-1 ring-[var(--theme-ink-primary)]' : ''}`}
+      />
+    </div>
+  ),
+);
+
+LedCell.displayName = 'LedCell';
 
 export const ActivityStatusBento: FC = () => {
   const [days, setDays] = useState<ContributionDay[]>(() => buildFallbackContributions());
@@ -201,93 +265,102 @@ export const ActivityStatusBento: FC = () => {
     return defaultCoord;
   }, [activeCoord, rows, defaultCoord]);
 
-  const moveFocusTo = (row: number, col: number) => {
-    const day = rows[row]?.[col];
-    if (!day) return;
+  const moveFocusTo = useCallback(
+    (row: number, col: number) => {
+      const day = rows[row]?.[col];
+      if (!day) return;
+      setActiveCoord({ row, col });
+      setSelectedDay(day);
+      const btn = gridRef.current?.querySelector<HTMLButtonElement>(
+        `[data-grid-row="${row}"][data-grid-col="${col}"]`,
+      );
+      btn?.focus();
+    },
+    [rows],
+  );
+
+  const findNextValid = useCallback(
+    (startRow: number, startCol: number, dRow: number, dCol: number): GridCoord | null => {
+      let r = startRow + dRow;
+      let c = startCol + dCol;
+      while (r >= 0 && r < 7 && c >= 0 && c < weekCount) {
+        if (rows[r][c]) return { row: r, col: c };
+        r += dRow;
+        c += dCol;
+      }
+      return null;
+    },
+    [rows, weekCount],
+  );
+
+  const handleCellHover = useCallback((day: ContributionDay) => {
+    setSelectedDay(day);
+  }, []);
+
+  const handleCellActivate = useCallback((day: ContributionDay, row: number, col: number) => {
     setActiveCoord({ row, col });
     setSelectedDay(day);
-    const btn = gridRef.current?.querySelector<HTMLButtonElement>(
-      `[data-grid-row="${row}"][data-grid-col="${col}"]`,
-    );
-    btn?.focus();
-  };
+  }, []);
 
-  const findNextValid = (
-    startRow: number,
-    startCol: number,
-    dRow: number,
-    dCol: number,
-  ): GridCoord | null => {
-    let r = startRow + dRow;
-    let c = startCol + dCol;
-    while (r >= 0 && r < 7 && c >= 0 && c < weekCount) {
-      if (rows[r][c]) return { row: r, col: c };
-      r += dRow;
-      c += dCol;
-    }
-    return null;
-  };
+  const handleCellKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLButtonElement>, row: number, col: number) => {
+      let target: GridCoord | null = null;
 
-  const handleCellKeyDown = (
-    event: KeyboardEvent<HTMLButtonElement>,
-    row: number,
-    col: number,
-  ) => {
-    let target: GridCoord | null = null;
-
-    if (event.key === 'ArrowRight') {
-      target = findNextValid(row, col, 0, 1);
-    } else if (event.key === 'ArrowLeft') {
-      target = findNextValid(row, col, 0, -1);
-    } else if (event.key === 'ArrowDown') {
-      target = findNextValid(row, col, 1, 0);
-    } else if (event.key === 'ArrowUp') {
-      target = findNextValid(row, col, -1, 0);
-    } else if (event.key === 'Home') {
-      if (event.ctrlKey) {
-        outer: for (let c = 0; c < weekCount; c++) {
-          for (let r = 0; r < 7; r++) {
-            if (rows[r][c]) {
-              target = { row: r, col: c };
-              break outer;
+      if (event.key === 'ArrowRight') {
+        target = findNextValid(row, col, 0, 1);
+      } else if (event.key === 'ArrowLeft') {
+        target = findNextValid(row, col, 0, -1);
+      } else if (event.key === 'ArrowDown') {
+        target = findNextValid(row, col, 1, 0);
+      } else if (event.key === 'ArrowUp') {
+        target = findNextValid(row, col, -1, 0);
+      } else if (event.key === 'Home') {
+        if (event.ctrlKey) {
+          outer: for (let c = 0; c < weekCount; c++) {
+            for (let r = 0; r < 7; r++) {
+              if (rows[r][c]) {
+                target = { row: r, col: c };
+                break outer;
+              }
+            }
+          }
+        } else {
+          for (let c = 0; c < weekCount; c++) {
+            if (rows[row][c]) {
+              target = { row, col: c };
+              break;
+            }
+          }
+        }
+      } else if (event.key === 'End') {
+        if (event.ctrlKey) {
+          outer: for (let c = weekCount - 1; c >= 0; c--) {
+            for (let r = 6; r >= 0; r--) {
+              if (rows[r][c]) {
+                target = { row: r, col: c };
+                break outer;
+              }
+            }
+          }
+        } else {
+          for (let c = weekCount - 1; c >= 0; c--) {
+            if (rows[row][c]) {
+              target = { row, col: c };
+              break;
             }
           }
         }
       } else {
-        for (let c = 0; c < weekCount; c++) {
-          if (rows[row][c]) {
-            target = { row, col: c };
-            break;
-          }
-        }
+        return;
       }
-    } else if (event.key === 'End') {
-      if (event.ctrlKey) {
-        outer: for (let c = weekCount - 1; c >= 0; c--) {
-          for (let r = 6; r >= 0; r--) {
-            if (rows[r][c]) {
-              target = { row: r, col: c };
-              break outer;
-            }
-          }
-        }
-      } else {
-        for (let c = weekCount - 1; c >= 0; c--) {
-          if (rows[row][c]) {
-            target = { row, col: c };
-            break;
-          }
-        }
-      }
-    } else {
-      return;
-    }
 
-    event.preventDefault();
-    if (target) {
-      moveFocusTo(target.row, target.col);
-    }
-  };
+      event.preventDefault();
+      if (target) {
+        moveFocusTo(target.row, target.col);
+      }
+    },
+    [findNextValid, moveFocusTo, rows, weekCount],
+  );
 
   return (
     <section
@@ -379,29 +452,18 @@ export const ActivityStatusBento: FC = () => {
                       resolvedActiveCoord?.col === colIdx;
 
                     return (
-                      <div key={day.date} role="gridcell" className="flex">
-                        <button
-                          type="button"
-                          tabIndex={isRovingActive ? 0 : -1}
-                          data-grid-row={rowIdx}
-                          data-grid-col={colIdx}
-                          onMouseEnter={() => setSelectedDay(day)}
-                          onFocus={() => {
-                            setActiveCoord({ row: rowIdx, col: colIdx });
-                            setSelectedDay(day);
-                          }}
-                          onClick={() => {
-                            setActiveCoord({ row: rowIdx, col: colIdx });
-                            setSelectedDay(day);
-                          }}
-                          onKeyDown={(e) => handleCellKeyDown(e, rowIdx, colIdx)}
-                          aria-label={`${formatContributionDate(day.date)}: ${day.count} contributions`}
-                          aria-pressed={isSelected}
-                          className={`h-7 w-7 cursor-pointer rounded-[4px] border transition-transform duration-100 hover:scale-125 focus-visible:scale-125 focus-visible:outline-2 focus-visible:outline-[var(--theme-ink-primary)] motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-visible:scale-100 sm:aspect-square sm:h-auto sm:w-full ${
-                            ledLevelStyles[day.level]
-                          } ${isSelected ? 'ring-1 ring-[var(--theme-ink-primary)]' : ''}`}
-                        />
-                      </div>
+                      <LedCell
+                        key={day.date}
+                        day={day}
+                        formattedDate={formatContributionDate(day.date)}
+                        row={rowIdx}
+                        col={colIdx}
+                        isSelected={isSelected}
+                        isRovingActive={isRovingActive}
+                        onHover={handleCellHover}
+                        onActivate={handleCellActivate}
+                        onCellKeyDown={handleCellKeyDown}
+                      />
                     );
                   })}
                 </div>

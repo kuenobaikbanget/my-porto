@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { LuTerminal } from 'react-icons/lu';
 
 type CatMood = 'sleepy' | 'meow' | 'alert' | 'annoyed' | 'angry';
@@ -199,6 +199,11 @@ export const TuxedoCatWidget: FC = () => {
   const [frameIndex, setFrameIndex] = useState(0);
   const [pokes, setPokes] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isTabVisible, setIsTabVisible] = useState(
+    () => typeof document === 'undefined' || !document.hidden,
+  );
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const current = stages[stageIndex];
 
@@ -211,9 +216,34 @@ export const TuxedoCatWidget: FC = () => {
     return () => media.removeEventListener('change', sync);
   }, []);
 
+  // Pause frame timer when scrolled off-screen or when tab is hidden
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const handleVisibility = () => setIsTabVisible(!document.hidden);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   useEffect(() => {
     if (reducedMotion) {
       setFrameIndex(0);
+      return;
+    }
+
+    if (!isVisible || !isTabVisible) {
       return;
     }
 
@@ -222,7 +252,7 @@ export const TuxedoCatWidget: FC = () => {
     }, current.intervalMs);
 
     return () => window.clearInterval(timer);
-  }, [current.frames.length, current.intervalMs, reducedMotion]);
+  }, [current.frames.length, current.intervalMs, reducedMotion, isVisible, isTabVisible]);
 
   const handleInteract = () => {
     setStageIndex((prev) => (prev + 1) % stages.length);
@@ -236,7 +266,7 @@ export const TuxedoCatWidget: FC = () => {
   const showPokeCursor = pokes > 0 && current.mood !== 'sleepy';
 
   return (
-    <div className="bento-card flex h-full flex-col justify-between p-5">
+    <div ref={containerRef} className="bento-card flex h-full flex-col justify-between p-5">
       {/* Top Bar */}
       <div className="flex items-center justify-between gap-2">
         <span className={`font-mono text-[11px] font-medium ${current.badgeClass}`}>

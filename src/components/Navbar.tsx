@@ -3,7 +3,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type CSSProperties,
   type FC,
   type MouseEvent,
 } from 'react';
@@ -58,12 +57,16 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   const [activeId, setActiveId] = useState<string>('hero');
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoverRect, setHoverRect] = useState<PillRect | null>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const { theme, toggleTheme } = useTheme();
 
   const railRef = useRef<HTMLElement | null>(null);
   const stabilizerRef = useRef<HTMLDivElement | null>(null);
+  const ledFillRef = useRef<HTMLDivElement | null>(null);
   const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const activeIdRef = useRef<string>(activeId);
+  activeIdRef.current = activeId;
+  const reducedMotionRef = useRef(false);
+  const hoveredLinkRectRef = useRef<DOMRect | null>(null);
   const rafRef = useRef<number | null>(null);
   const scrollLockRef = useRef<string | null>(null);
   const scrollLockTimerRef = useRef<number | null>(null);
@@ -76,6 +79,17 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
     targetHeight: 0,
     initialized: false,
   });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => {
+      reducedMotionRef.current = media.matches;
+    };
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
 
   const isLight = theme === 'light';
   const hasActiveNav = navLinks.some((link) => link.id === activeId);
@@ -107,9 +121,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   const animateStabilizerTo = useCallback(
     (target: PillRect, immediate = false) => {
       const state = springRef.current;
-      const reduceMotion =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const reduceMotion = reducedMotionRef.current;
 
       state.targetY = target.y;
       state.targetHeight = target.height;
@@ -204,8 +216,9 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
     if (!rail || typeof ResizeObserver === 'undefined') return;
 
     const observer = new ResizeObserver(() => {
-      if (!navLinks.some((link) => link.id === activeId)) return;
-      const rect = measureLink(activeId);
+      const currentActive = activeIdRef.current;
+      if (!navLinks.some((link) => link.id === currentActive)) return;
+      const rect = measureLink(currentActive);
       if (rect) {
         animateStabilizerTo(rect, true);
       }
@@ -213,7 +226,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
 
     observer.observe(rail);
     return () => observer.disconnect();
-  }, [activeId, measureLink, animateStabilizerTo]);
+  }, [measureLink, animateStabilizerTo]);
 
   useEffect(() => {
     return () => {
@@ -227,6 +240,16 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   // Deterministic scroll-spy that respects click-lock and reliably reaches Contact at page bottom
   useEffect(() => {
     const sectionIds = navLinks.map((l) => l.id);
+    const sectionEls = new Map<string, HTMLElement>();
+    const getSectionEl = (id: string): HTMLElement | null => {
+      let el = sectionEls.get(id) ?? null;
+      if (!el || !el.isConnected) {
+        el = document.getElementById(id);
+        if (el) sectionEls.set(id, el);
+      }
+      return el;
+    };
+
     const supportsScrollTimeline =
       typeof CSS !== 'undefined' &&
       typeof CSS.supports === 'function' &&
@@ -240,10 +263,10 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
       const docEl = document.documentElement;
       const maxScroll = Math.max(docEl.scrollHeight - window.innerHeight, 0);
 
-      if (!supportsScrollTimeline) {
-        setScrollProgress(
-          maxScroll > 0 ? Math.min(Math.max(window.scrollY / maxScroll, 0), 1) : 0,
-        );
+      if (!supportsScrollTimeline && ledFillRef.current) {
+        const progress =
+          maxScroll > 0 ? Math.min(Math.max(window.scrollY / maxScroll, 0), 1) : 0;
+        ledFillRef.current.style.setProperty('--scroll-progress', progress.toFixed(4));
       }
 
       if (scrollLockRef.current !== null) {
@@ -264,7 +287,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
       let current = 'hero';
 
       for (const id of sectionIds) {
-        const el = document.getElementById(id);
+        const el = getSectionEl(id);
         if (!el) continue;
         if (el.getBoundingClientRect().top <= activationLine) {
           current = id;
@@ -324,9 +347,9 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   };
 
   const handleLinkMouseMove = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (reducedMotionRef.current) return;
     const el = event.currentTarget;
-    const rect = el.getBoundingClientRect();
+    const rect = hoveredLinkRectRef.current ?? el.getBoundingClientRect();
     const relX = (event.clientX - rect.left) / rect.width - 0.5;
     const relY = (event.clientY - rect.top) / rect.height - 0.5;
     el.style.setProperty('--mag-x', `${(relX * 2.5).toFixed(2)}px`);
@@ -334,6 +357,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   };
 
   const handleLinkMouseLeave = (event: MouseEvent<HTMLAnchorElement>) => {
+    hoveredLinkRectRef.current = null;
     event.currentTarget.style.setProperty('--mag-x', '0px');
     event.currentTarget.style.setProperty('--mag-y', '0px');
   };
@@ -481,7 +505,8 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
               aria-label={label}
               aria-current={isActive ? 'location' : undefined}
               onClick={() => lockActiveTo(id)}
-              onMouseEnter={() => {
+              onMouseEnter={(e) => {
+                hoveredLinkRectRef.current = e.currentTarget.getBoundingClientRect();
                 const rect = measureLink(id);
                 if (rect) setHoverRect(rect);
               }}
@@ -503,10 +528,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
 
         {/* Vertical scroll-driven LED progress filament */}
         <div className="switch-rail-led-track" aria-hidden="true">
-          <div
-            className="switch-rail-led-fill"
-            style={{ '--scroll-progress': scrollProgress } as CSSProperties}
-          />
+          <div ref={ledFillRef} className="switch-rail-led-fill" />
         </div>
       </nav>
     </>

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FC } from 'react';
-import { useAsciiReveal } from 'ascii-reveal';
 import { skillCategories, skillsData, type SkillCategoryKey } from '../data/skills';
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
+import { prefetchAsciiReveal, useLazyAsciiReveal } from '../utils/lazyAsciiReveal';
 import { SectionHeader } from './SectionHeader';
 import { SkillKeycap } from './SkillKeycap';
 
@@ -28,14 +28,20 @@ export const TechStackBento: FC = () => {
     ref: gridRef,
     reveal: revealGrid,
     hide: hideGrid,
-  } = useAsciiReveal({
+  } = useLazyAsciiReveal({
     preset: 'terminal',
     duration: 'cinematic',
     speed: 1.25,
     origin: 'top-left',
     selector: '[data-skill-grid-item]',
-    revealOnMount: false,
   });
+
+  // Warm the async ascii-reveal chunk once the toolbox scrolls into view
+  useEffect(() => {
+    if (isVisible) {
+      prefetchAsciiReveal();
+    }
+  }, [isVisible]);
 
   useEffect(() => {
     if (activeCategory === renderedCategory) return;

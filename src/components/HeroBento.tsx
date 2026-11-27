@@ -26,6 +26,8 @@ export const HeroBento: FC = () => {
                     className="h-14 w-14 rounded-xl object-cover sm:h-16 sm:w-16"
                     width={64}
                     height={64}
+                    decoding="async"
+                    fetchPriority="high"
                   />
                 </div>
                 <div>

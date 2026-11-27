@@ -393,7 +393,7 @@
       inset 0 1px 0 var(--theme-keycap-highlight),
       0 2px 0 var(--theme-bevel);
     pointer-events: none;
-    will-change: transform, height, opacity;
+    will-change: transform, opacity;
     transition: opacity 180ms ease;
   }
 
@@ -420,7 +420,7 @@
     background-color: var(--theme-keycap);
     border: 1px solid var(--theme-border);
     pointer-events: none;
-    will-change: transform, height, opacity;
+    will-change: transform, opacity;
     transition:
       transform 190ms cubic-bezier(0.22, 1, 0.36, 1),
       height 190ms cubic-bezier(0.22, 1, 0.36, 1),

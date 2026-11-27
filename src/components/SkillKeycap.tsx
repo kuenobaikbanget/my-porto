@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC, type FocusEvent, type PointerEvent } from 'react';
+import { memo, useEffect, useRef, useState, type FC, type FocusEvent, type PointerEvent } from 'react';
 import { type IconType } from 'react-icons';
 import { FaJava } from 'react-icons/fa6';
 import {
@@ -29,9 +29,9 @@ import {
   SiUbuntu,
   SiWireshark,
 } from 'react-icons/si';
-import { presets, useAsciiReveal } from 'ascii-reveal';
 import { useTheme } from '../context/useTheme';
 import type { SkillCategoryKey, SkillItem } from '../data/skills';
+import { useLazyAsciiReveal } from '../utils/lazyAsciiReveal';
 
 const categoryAccentDot: Record<Exclude<SkillCategoryKey, 'all'>, string> = {
   iot: 'bg-[var(--theme-accent-butter-dot)]',
@@ -47,11 +47,22 @@ const categoryAccentCssVar: Record<Exclude<SkillCategoryKey, 'all'>, string> = {
   security: '--theme-accent-pink',
 };
 
-const logoTerminalPreset = {
-  ...presets.terminal,
-  color: 'source' as const,
-  cells: [18, 14, 10, 8],
-};
+// Module-level caches prevent repeated getComputedStyle + XMLSerializer work across hovers
+const themeColorCache = new Map<string, string>();
+const iconDataUriCache = new Map<string, string>();
+
+function getResolvedCategoryColor(theme: string, cssVarName: string): string {
+  const key = `${theme}:${cssVarName}`;
+  const cached = themeColorCache.get(key);
+  if (cached) return cached;
+
+  const resolved =
+    typeof document !== 'undefined'
+      ? getComputedStyle(document.documentElement).getPropertyValue(cssVarName).trim() || '#f3edf7'
+      : '#f3edf7';
+  themeColorCache.set(key, resolved);
+  return resolved;
+}
 
 const CachyOSIcon: IconType = ({ size = '1em', color, style, ...props }) => (
   <svg
@@ -124,12 +135,12 @@ interface SkillKeycapProps {
   skill: SkillItem;
 }
 
-export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
+export const SkillKeycap: FC<SkillKeycapProps> = memo(({ skill }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [isOverlayMounted, setIsOverlayMounted] = useState(false);
-  const [iconDataUri, setIconDataUri] = useState<string | null>(null);
+  const [iconDataUri, setIconDataUri] = useState<{ key: string; uri: string } | null>(null);
   const [accentColor, setAccentColor] = useState<string>('');
 
   const { theme } = useTheme();
@@ -140,37 +151,38 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
   const logoLoadedRef = useRef(false);
   const isOverlayMountedRef = useRef(isOverlayMounted);
   isOverlayMountedRef.current = isOverlayMounted;
-  const iconDataUriRef = useRef(iconDataUri);
-  iconDataUriRef.current = iconDataUri;
   const isActive = isHovered || isFocused || isPinned;
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
 
   const Icon = skillIconMap[skill.name] ?? LuCpu;
   const cssVarName = categoryAccentCssVar[skill.category];
+  const cacheKey = `${skill.name}:${theme}`;
+  const cachedUri = iconDataUriCache.get(cacheKey) ?? null;
+  const activeIconUri = cachedUri ?? (iconDataUri?.key === cacheKey ? iconDataUri.uri : null);
+  const activeIconUriRef = useRef(activeIconUri);
+  activeIconUriRef.current = activeIconUri;
 
   const {
     ref: labelRef,
     reveal: revealLabel,
     hide: hideLabel,
-  } = useAsciiReveal({
+  } = useLazyAsciiReveal({
     preset: 'terminal',
     duration: 'fast',
     speed: 0.9,
     origin: 'center',
-    revealOnMount: false,
   });
 
   const {
     ref: logoRef,
     reveal: revealLogo,
     hide: hideLogo,
-  } = useAsciiReveal({
-    preset: logoTerminalPreset,
+  } = useLazyAsciiReveal({
+    preset: 'logo-terminal',
     duration: 'fast',
     speed: 0.9,
     origin: 'center',
-    revealOnMount: false,
   });
 
   // Animate text container and logo overlay with ASCII reveal/hide transitions.
@@ -190,7 +202,6 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
           if (!isActiveRef.current) {
             setIsOverlayMounted(false);
             logoLoadedRef.current = false;
-            setIconDataUri(null);
           }
         });
       }
@@ -200,25 +211,32 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
     setIsOverlayMounted(true);
     void hideLabel({ origin });
 
-    if (logoLoadedRef.current && iconDataUriRef.current) {
+    if (logoLoadedRef.current && activeIconUriRef.current) {
       void revealLogo({ origin });
     }
   }, [isActive, hideLabel, revealLabel, hideLogo, revealLogo]);
 
-  // Serialize the icon SVG lazily on demand using live CSS theme tokens.
+  // Serialize the icon SVG once per (skill, theme) and reuse from cache on subsequent hovers.
   useEffect(() => {
     if (!isOverlayMounted || !isActive) return;
 
+    const resolvedColor = getResolvedCategoryColor(theme, cssVarName);
+    setAccentColor(resolvedColor);
+
+    const existingUri = iconDataUriCache.get(cacheKey);
+    if (existingUri) {
+      if (activeIconUriRef.current !== existingUri) {
+        logoLoadedRef.current = false;
+        setIconDataUri({ key: cacheKey, uri: existingUri });
+      }
+      return;
+    }
+
     const host = svgHostRef.current;
-    const btn = buttonRef.current;
-    if (!host || !btn) return;
+    if (!host) return;
 
     const svgEl = host.querySelector('svg');
     if (!svgEl) return;
-
-    const resolvedColor =
-      getComputedStyle(btn).getPropertyValue(cssVarName).trim() || '#f3edf7';
-    setAccentColor(resolvedColor);
 
     const clone = svgEl.cloneNode(true) as SVGSVGElement;
     clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -228,11 +246,10 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
 
     const serialized = new XMLSerializer().serializeToString(clone);
     const nextUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(serialized)}`;
-    if (nextUri !== iconDataUriRef.current) {
-      logoLoadedRef.current = false;
-      setIconDataUri(nextUri);
-    }
-  }, [isOverlayMounted, isActive, theme, cssVarName]);
+    iconDataUriCache.set(cacheKey, nextUri);
+    logoLoadedRef.current = false;
+    setIconDataUri({ key: cacheKey, uri: nextUri });
+  }, [isOverlayMounted, isActive, theme, cssVarName, cacheKey]);
 
   useEffect(() => {
     if (!isPinned) return;
@@ -317,18 +334,20 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
       {/* On-demand icon SVG host + ASCII reveal overlay (mounted while active or hiding) */}
       {isOverlayMounted ? (
         <>
-          <span ref={svgHostRef} className="hidden" aria-hidden="true">
-            <Icon size={40} />
-          </span>
+          {!cachedUri ? (
+            <span ref={svgHostRef} className="hidden" aria-hidden="true">
+              <Icon size={40} />
+            </span>
+          ) : null}
           <div
             ref={logoRef}
             aria-hidden="true"
             style={{ color: accentColor || `var(${cssVarName})` }}
             className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[9px]"
           >
-            {iconDataUri ? (
+            {activeIconUri ? (
               <img
-                src={iconDataUri}
+                src={activeIconUri}
                 alt=""
                 onLoad={handleImageLoad}
                 className="relative z-[1] h-9 w-9 shrink-0 object-contain"
@@ -339,4 +358,6 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
       ) : null}
     </button>
   );
-};
+});
+
+SkillKeycap.displayName = 'SkillKeycap';

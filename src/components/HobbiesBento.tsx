@@ -9,9 +9,22 @@ import { SectionHeader } from './SectionHeader';
 
 export const HobbiesBento: FC = () => {
   const [activeTab, setActiveTab] = useState<HobbyCategory['key']>('keyboards');
+  const [visitedTabs, setVisitedTabs] = useState<Set<HobbyCategory['key']>>(
+    () => new Set(['keyboards']),
+  );
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
   const { isMounted, isClosing, displayValue: activeImage } = useHyprPresence(lightboxImage);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
+
+  const selectTab = useCallback((key: HobbyCategory['key']) => {
+    setActiveTab(key);
+    setVisitedTabs((prev) => {
+      if (prev.has(key)) return prev;
+      const next = new Set(prev);
+      next.add(key);
+      return next;
+    });
+  }, []);
 
   const tabsIdPrefix = useId();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -51,7 +64,7 @@ export const HobbiesBento: FC = () => {
     if (nextIndex === null) return;
     event.preventDefault();
     const nextCategory = hobbiesData[nextIndex];
-    setActiveTab(nextCategory.key);
+    selectTab(nextCategory.key);
     tabRefs.current[nextIndex]?.focus();
   };
 
@@ -89,7 +102,7 @@ export const HobbiesBento: FC = () => {
                   aria-selected={isActive}
                   aria-controls={getPanelId(cat.key)}
                   tabIndex={isActive ? 0 : -1}
-                  onClick={() => setActiveTab(cat.key)}
+                  onClick={() => selectTab(cat.key)}
                   onKeyDown={(e) => handleTabKeyDown(e, idx)}
                   className={`keycap min-h-[44px] px-3 py-2 text-xs sm:min-h-[36px] sm:py-1.5 ${
                     isActive ? 'keycap-mint' : 'text-[var(--theme-ink-muted)]'
@@ -107,6 +120,7 @@ export const HobbiesBento: FC = () => {
 
         {hobbiesData.map((cat) => {
           const isPanelActive = cat.key === activeTab;
+          const shouldRenderImages = visitedTabs.has(cat.key);
           return (
             <div
               key={cat.key}
@@ -116,28 +130,31 @@ export const HobbiesBento: FC = () => {
               hidden={!isPanelActive}
               className="grid grid-cols-2 gap-3 sm:grid-cols-4"
             >
-              {cat.images.map((img) => (
-                <button
-                  key={img.src}
-                  type="button"
-                  onClick={() => setLightboxImage(img)}
-                  className="group relative aspect-[4/3] min-h-[44px] cursor-pointer overflow-hidden rounded-xl border border-[var(--theme-border)] bg-[var(--theme-well)] text-left shadow-[0_3px_0_var(--theme-bevel)] transition-colors hover:border-[var(--theme-accent-pink-border)] focus-visible:outline-2 focus-visible:outline-[var(--theme-accent-mint)] motion-reduce:transition-none"
-                  aria-label={`View larger photo: ${img.alt}`}
-                >
-                  <img
-                    src={img.src}
-                    alt={img.alt}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                  />
-                  <span
-                    className="absolute right-2 bottom-2 inline-flex items-center justify-center rounded-lg border border-[var(--theme-border-strong)] bg-[var(--theme-housing)]/90 p-1.5 text-[var(--theme-ink-primary)] opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none"
-                    aria-hidden="true"
-                  >
-                    <LuExpand className="h-3.5 w-3.5" />
-                  </span>
-                </button>
-              ))}
+              {shouldRenderImages
+                ? cat.images.map((img) => (
+                    <button
+                      key={img.src}
+                      type="button"
+                      onClick={() => setLightboxImage(img)}
+                      className="group relative aspect-[4/3] min-h-[44px] cursor-pointer overflow-hidden rounded-xl border border-[var(--theme-border)] bg-[var(--theme-well)] text-left shadow-[0_3px_0_var(--theme-bevel)] transition-colors hover:border-[var(--theme-accent-pink-border)] focus-visible:outline-2 focus-visible:outline-[var(--theme-accent-mint)] motion-reduce:transition-none"
+                      aria-label={`View larger photo: ${img.alt}`}
+                    >
+                      <img
+                        src={img.src}
+                        alt={img.alt}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                      />
+                      <span
+                        className="absolute right-2 bottom-2 inline-flex items-center justify-center rounded-lg border border-[var(--theme-border-strong)] bg-[var(--theme-housing)]/90 p-1.5 text-[var(--theme-ink-primary)] opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none"
+                        aria-hidden="true"
+                      >
+                        <LuExpand className="h-3.5 w-3.5" />
+                      </span>
+                    </button>
+                  ))
+                : null}
             </div>
           );
         })}
@@ -180,6 +197,7 @@ export const HobbiesBento: FC = () => {
                 <img
                   src={activeImage.src}
                   alt={activeImage.alt}
+                  decoding="async"
                   className="max-h-[76vh] w-full rounded-xl object-contain"
                 />
               </div>
