@@ -1,7 +1,6 @@
 export interface HobbyCategory {
   key: 'keyboards' | 'mice' | 'coffee' | 'cassettes';
   label: string;
-  katakana: string;
   note: string;
   images: { src: string; alt: string }[];
 }
@@ -25,28 +24,24 @@ export const hobbiesData: HobbyCategory[] = [
   {
     key: 'keyboards',
     label: 'Keyboards',
-    katakana: 'キーボード',
     note: 'Custom mechanical boards, tactile switches, and GMK-inspired colorway setups.',
     images: collectImages('hobikeyboard', 'Mechanical keyboard'),
   },
   {
     key: 'mice',
     label: 'Mice',
-    katakana: 'マウス',
     note: 'Lightweight gaming mice, skates, and grip experimentation.',
     images: collectImages('hobimouse', 'Gaming mouse'),
   },
   {
     key: 'coffee',
     label: 'Coffee · Hario Switch',
-    katakana: 'コーヒー',
     note: 'Daily immersion-percolation pour-over brews on a Hario Switch.',
     images: collectImages('hobikopi', 'Hario Switch coffee'),
   },
   {
     key: 'cassettes',
     label: 'Cassettes',
-    katakana: 'カセット',
     note: 'Physical analog tape collecting for off-screen listening.',
     images: collectImages('hobipita', 'Cassette tape collection'),
   },

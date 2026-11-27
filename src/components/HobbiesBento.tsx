@@ -28,7 +28,7 @@ export const HobbiesBento: FC = () => {
       className={`reveal-block py-8 sm:py-10 ${isVisible ? 'is-visible' : ''}`}
     >
       <SectionHeader
-        katakana="ホビー // OFF-DUTY BENCH"
+        eyebrow="OFF-DUTY BENCH"
         title="Off-Duty Craft"
         subtitle="Mechanical keyboards, lightweight mice, Hario Switch coffee, and cassettes."
         accentColor="pink"
@@ -61,10 +61,7 @@ export const HobbiesBento: FC = () => {
             })}
           </div>
 
-          <p className="font-mono text-xs text-[#8e71a2]">
-            <span aria-hidden="true">{currentCategory.katakana} · </span>
-            <span className="text-[#b9a7c9]">{currentCategory.note}</span>
-          </p>
+          <p className="font-mono text-xs text-[#b9a7c9]">{currentCategory.note}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

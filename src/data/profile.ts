@@ -32,7 +32,7 @@ export const profileData: ProfileData = {
     'Undergraduate Information Systems student at UPN "Veteran" Jakarta focused on practical hardware, Linux infrastructure, and dependable software. From wiring servo flight actuators and managing Ubuntu/UniFi networks to building self-hosted Go monitoring and offline-first Kotlin apps.',
   location: 'Banten / Jakarta, Indonesia',
   university: 'UPN "Veteran" Jakarta',
-  degree: 'B.Sc. Information Systems',
+  degree: 'Information Systems',
   studyPeriod: 'July 2024 – Present',
   gpa: '3.87 / 4.00',
   statusLabel: 'IT Support Intern @ PT Kalapa · Open to Ops/IoT',

@@ -49,7 +49,7 @@ export const experienceData: ExperienceItem[] = [
 
 export const educationData: EducationItem = {
   institution: 'Universitas Pembangunan Nasional "Veteran" Jakarta',
-  degree: 'B.Sc. in Information Systems',
+  degree: 'Information Systems',
   period: 'July 2024 – Present',
   gpa: '3.87 / 4.00',
   notes: [

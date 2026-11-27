@@ -45,9 +45,8 @@ export const TuxedoCatWidget: FC = () => {
     <div className="bento-card flex h-full flex-col justify-between p-5">
       {/* Top Bar */}
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[11px] font-medium text-[#8e71a2]">
-          <span aria-hidden="true">ネコ // </span>
-          <span className={meta.badgeClass}>{meta.code}</span>
+        <span className={`font-mono text-[11px] font-medium ${meta.badgeClass}`}>
+          {meta.code}
         </span>
         <span className="recessed-well rounded-md px-2 py-0.5 font-mono text-[11px] text-[#f3e6a2]">
           PET ×{pets}

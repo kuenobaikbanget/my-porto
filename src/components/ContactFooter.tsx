@@ -28,8 +28,8 @@ export const ContactFooter: FC = () => {
       <div className="bento-card p-6 sm:p-8">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
-            <p className="font-mono text-xs tracking-wider text-[#8e71a2]" aria-hidden="true">
-              コンタクト // GET IN TOUCH
+            <p className="font-mono text-xs tracking-wider text-[#8e71a2]">
+              GET IN TOUCH
             </p>
             <h2 className="mt-1 font-display text-2xl font-bold text-[#f3edf7] sm:text-3xl">
               Let&apos;s build dependable systems.

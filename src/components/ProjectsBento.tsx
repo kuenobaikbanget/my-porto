@@ -25,7 +25,7 @@ export const ProjectsBento: FC = () => {
   return (
     <section id="projects" className="py-8 sm:py-10">
       <SectionHeader
-        katakana="プロジェクト // FEATURED BUILDS"
+        eyebrow="FEATURED BUILDS"
         title="Featured Projects"
         subtitle="Self-hosted Linux tooling, offline-first mobile apps, and robotics hardware."
         accentColor="butter"
@@ -44,17 +44,9 @@ export const ProjectsBento: FC = () => {
                   <div className="recessed-well flex h-9 w-9 items-center justify-center rounded-xl">
                     {renderCategoryIcon(project.id)}
                   </div>
-                  <div>
-                    <p
-                      className="font-mono text-[10px] tracking-wider text-[#8e71a2]"
-                      aria-hidden="true"
-                    >
-                      {project.katakana}
-                    </p>
-                    <h3 className="font-display text-lg font-bold text-[#f3edf7]">
-                      {project.title}
-                    </h3>
-                  </div>
+                  <h3 className="font-display text-lg font-bold text-[#f3edf7]">
+                    {project.title}
+                  </h3>
                 </div>
 
                 <span

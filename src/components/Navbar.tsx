@@ -53,9 +53,6 @@ export const Navbar: FC = () => {
             className="keycap px-3 py-1.5 text-xs tracking-wide text-[#f3edf7] no-underline"
           >
             <span className="font-semibold text-[#eed2df]">{profileData.handle}</span>
-            <span className="hidden text-[#8e71a2] sm:inline" aria-hidden="true">
-              // ナイト・デスク
-            </span>
           </a>
 
           {/* Windowed LED status badge */}

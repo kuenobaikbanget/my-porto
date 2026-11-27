@@ -29,7 +29,7 @@ export const TechStackBento: FC = () => {
       className={`reveal-block py-8 sm:py-10 ${isVisible ? 'is-visible' : ''}`}
     >
       <SectionHeader
-        katakana="スタック // KEYCAP MATRIX"
+        eyebrow="KEYCAP MATRIX"
         title="Tech Toolbox"
         subtitle="Tools I ship and maintain systems with — organized as tactile keycaps."
         accentColor="mint"

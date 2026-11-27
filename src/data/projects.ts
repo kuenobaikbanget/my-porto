@@ -3,7 +3,6 @@ export type ProjectAccent = 'butter' | 'mint' | 'pink';
 export interface ProjectItem {
   id: string;
   title: string;
-  katakana: string;
   category: string;
   period: string;
   tagline: string;
@@ -19,7 +18,6 @@ export const projectsData: ProjectItem[] = [
   {
     id: 'opspilot',
     title: 'opspilot',
-    katakana: 'オプス・パイロット',
     category: 'Systems & AI Ops',
     period: 'Active',
     tagline: 'Self-hosted Linux monitoring & evidence-first AI incident investigation',
@@ -37,7 +35,6 @@ export const projectsData: ProjectItem[] = [
   {
     id: 'finnote',
     title: 'FinNote',
-    katakana: 'フィン・ノート',
     category: 'Android Mobile',
     period: 'Jun 2026',
     tagline: 'The Quiet Pocket Ledger — calm expense tracker for college students',
@@ -55,7 +52,6 @@ export const projectsData: ProjectItem[] = [
   {
     id: 'aero-fik',
     title: 'Aero FIK Project',
-    katakana: 'エアロ・ロボティクス',
     category: 'Embedded & Robotics',
     period: 'Nov 2025',
     tagline: 'Polyfoam elevator & servo flight-control actuation at KSM Robotika',

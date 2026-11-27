@@ -2,7 +2,7 @@ import type { FC } from 'react';
 
 interface SectionHeaderProps {
   id?: string;
-  katakana: string;
+  eyebrow: string;
   title: string;
   subtitle?: string;
   accentColor?: 'mint' | 'butter' | 'pink' | 'sky';
@@ -16,7 +16,7 @@ const accentDotMap: Record<NonNullable<SectionHeaderProps['accentColor']>, strin
 };
 
 export const SectionHeader: FC<SectionHeaderProps> = ({
-  katakana,
+  eyebrow,
   title,
   subtitle,
   accentColor = 'mint',
@@ -29,7 +29,7 @@ export const SectionHeader: FC<SectionHeaderProps> = ({
             className={`inline-block h-2 w-2 rounded-full ${accentDotMap[accentColor]}`}
             aria-hidden="true"
           />
-          <span aria-hidden="true">{katakana}</span>
+          <span>{eyebrow}</span>
         </div>
         <h2 className="font-display text-2xl font-bold tracking-tight text-[#f3edf7] sm:text-3xl">
           {title}

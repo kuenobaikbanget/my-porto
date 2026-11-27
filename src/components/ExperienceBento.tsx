@@ -14,7 +14,7 @@ export const ExperienceBento: FC = () => {
       className={`reveal-block py-8 sm:py-10 ${isVisible ? 'is-visible' : ''}`}
     >
       <SectionHeader
-        katakana="エクスペリエンス // TRACK RECORD"
+        eyebrow="TRACK RECORD"
         title="Experience & Education"
         subtitle="Hands-on IT infrastructure, Linux systems, and hardware engineering."
         accentColor="sky"

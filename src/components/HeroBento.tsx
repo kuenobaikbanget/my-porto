@@ -43,12 +43,6 @@ export const HeroBento: FC = () => {
                   />
                 </div>
                 <div>
-                  <p
-                    className="font-mono text-[11px] uppercase tracking-widest text-[#8e71a2]"
-                    aria-hidden="true"
-                  >
-                    プロフ // R3-1.75U-CAP
-                  </p>
                   <h1 className="font-display text-2xl font-bold tracking-tight text-[#f3edf7] sm:text-4xl">
                     {profileData.name}
                   </h1>
