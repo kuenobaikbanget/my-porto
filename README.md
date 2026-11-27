@@ -1,32 +1,26 @@
 <div align="center">
-  <h1>kuenobaikbanget's Portfolio</h1>
-  <img src="public/gambar.jpg" alt="cat logo" width="120" style="border-radius:50%;margin:1rem 0;" />
-  <p><b>Personal portfolio website</b></p>
+  <h1>kuenobaikbanget — Portfolio</h1>
+  <img src="public/gambar.jpg" alt="Akbar Dwi Maulana avatar" width="110" style="border-radius:16px;margin:1rem 0;" />
+  <p><b>Tactile Keycap Bento · GMK Digital Nightmares Colorway</b></p>
 </div>
 
 ---
 
-## About
+## Overview
 
-This is my personal portfolio site. Here you can find:
+Personal portfolio for **Akbar Dwi Maulana** ([kueno.web.id](https://kueno.web.id/)) — 3rd-year Information Systems student at UPN "Veteran" Jakarta focusing on IoT, embedded hardware, Linux systems, networking, and practical software.
 
-- My profile and education
-- Hobbies and interests
-- Skills (C, HTML, CSS, Git, MySQL)
-- Social media links
-- Built with a minimalist dark theme, blue accent, and fully responsive layout
+- **Hero & Tuxedo Desk Companion:** Recruiter-ready summary, CV download, email copy keycap, and an interactive sleepy tuxedo cat widget.
+- **Featured Projects:** `opspilot`, `FinNote`, and `Aero FIK Project — KSM Robotika`.
+- **Experience & Education:** Internships at PT Kalapa Technology Putera & PT Datasoft Informatika Technologi, plus UPNVJ academic record.
+- **Tech Toolbox:** Filterable tactile keycap matrix across IoT & Hardware, Linux & Networking, Dev (Web & Mobile), and Security & Tools.
+- **Off-Duty Bench:** Compact WebP gallery for mechanical keyboards, mice, Hario Switch pour-over coffee, and cassettes.
 
-## Getting Started
+## Development
 
-1. **Install dependencies:**
-   ```powershell
-   npm install
-   ```
-2. **Run:**
-   ```powershell
-   npm run dev
-   ```
-
-## Preview
-
-![Screenshot](public/ss.png)
+```bash
+npm install
+npm run dev
+npm run lint
+npm run build
+```

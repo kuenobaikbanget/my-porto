@@ -1,0 +1,130 @@
+import { useEffect, useState, type FC } from 'react';
+import { LuExpand, LuX } from 'react-icons/lu';
+import { hobbiesData, type HobbyCategory } from '../data/hobbies';
+import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
+import { SectionHeader } from './SectionHeader';
+
+export const HobbiesBento: FC = () => {
+  const [activeTab, setActiveTab] = useState<HobbyCategory['key']>('keyboards');
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+  const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
+
+  const currentCategory =
+    hobbiesData.find((cat) => cat.key === activeTab) ?? hobbiesData[0];
+
+  useEffect(() => {
+    if (!lightboxImage) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxImage(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [lightboxImage]);
+
+  return (
+    <section
+      id="hobbies"
+      ref={ref}
+      className={`reveal-block py-8 sm:py-10 ${isVisible ? 'is-visible' : ''}`}
+    >
+      <SectionHeader
+        katakana="ホビー // OFF-DUTY BENCH"
+        title="Off-Duty Craft"
+        subtitle="Mechanical keyboards, lightweight mice, Hario Switch coffee, and cassettes."
+        accentColor="pink"
+      />
+
+      <div className="bento-card p-5 sm:p-6">
+        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div
+            className="recessed-well inline-flex flex-wrap gap-2 rounded-2xl p-2"
+            role="tablist"
+            aria-label="Off-duty craft categories"
+          >
+            {hobbiesData.map((cat) => {
+              const isActive = cat.key === activeTab;
+              return (
+                <button
+                  key={cat.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(cat.key)}
+                  className={`keycap px-3 py-1.5 text-xs ${
+                    isActive ? 'keycap-mint' : 'text-[#b9a7c9]'
+                  }`}
+                >
+                  <span>{cat.label}</span>
+                  <span className="opacity-70">({cat.images.length})</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="font-mono text-xs text-[#8e71a2]">
+            <span aria-hidden="true">{currentCategory.katakana} · </span>
+            <span className="text-[#b9a7c9]">{currentCategory.note}</span>
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {currentCategory.images.map((img) => (
+            <button
+              key={img.src}
+              type="button"
+              onClick={() => setLightboxImage(img)}
+              className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-xl border border-[#3d2a54] bg-[#140c1c] text-left shadow-[0_3px_0_#110a18] transition-colors hover:border-[#eed2df] focus-visible:outline-2 focus-visible:outline-[#c6e3d1]"
+              aria-label={`View larger photo: ${img.alt}`}
+            >
+              <img
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <span
+                className="absolute right-2 bottom-2 inline-flex items-center justify-center rounded-lg border border-[#493364] bg-[#170e1f]/85 p-1.5 text-[#f3edf7] opacity-0 transition-opacity group-hover:opacity-100"
+                aria-hidden="true"
+              >
+                <LuExpand className="h-3.5 w-3.5" />
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Lightbox Modal */}
+      {lightboxImage ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0713]/85 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label={lightboxImage.alt}
+          onClick={() => setLightboxImage(null)}
+        >
+          <div
+            className="bento-card relative max-h-[90vh] max-w-3xl overflow-hidden p-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-2 flex items-center justify-between gap-4 px-1">
+              <span className="font-mono text-xs text-[#b9a7c9]">{lightboxImage.alt}</span>
+              <button
+                type="button"
+                onClick={() => setLightboxImage(null)}
+                className="keycap p-1.5 text-xs text-[#f3edf7]"
+                aria-label="Close photo preview"
+              >
+                <LuX className="h-4 w-4" />
+              </button>
+            </div>
+            <img
+              src={lightboxImage.src}
+              alt={lightboxImage.alt}
+              className="max-h-[76vh] w-full rounded-xl object-contain"
+            />
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+};

@@ -1,193 +1,218 @@
-:root {
-  /* Font & base */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  font-weight: 400;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+@import "tailwindcss";
 
-  /* Dark theme palette */
-  --color-bg: #0d0f12;
-  /* almost black */
-  --color-bg-alt: #14181d;
-  /* section alt */
-  --color-surface: #1d232a;
-  /* cards */
-  --color-surface-alt: #242c35;
-  /* hover/raised */
-  --color-border: #2f3a44;
-  --color-border-soft: #20262d;
-  --color-text: #e6ecf1;
-  --color-text-soft: #9aa8b5;
-  --color-heading: #f1f5f9;
-  --color-accent: #1e6bff;
-  /* primary blue */
-  --color-accent-hover: #4d8dff;
-  --color-accent-glow: 0 0 0 4px rgba(30, 107, 255, 0.25);
-  --color-warning: #ffd700;
-  --gradient-accent: linear-gradient(135deg, #1e6bff 0%, #1453c7 100%);
-  --color-bg: #000000;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --transition-base: 0.3s cubic-bezier(.4, .2, .2, 1);
-  color-scheme: dark;
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-plum-canvas: #170e1f;
+  --color-plum-housing: #22162e;
+  --color-plum-keycap: #2b1d3a;
+  --color-plum-keycap-hover: #342447;
+  --color-plum-bevel: #110a18;
+  --color-plum-border: #3d2a54;
+  --color-plum-legend: #8e71a2;
+
+  --color-ink-primary: #f3edf7;
+  --color-ink-muted: #b9a7c9;
+
+  --color-pastel-mint: #c6e3d1;
+  --color-pastel-mint-bevel: #7fa790;
+  --color-pastel-butter: #f3e6a2;
+  --color-pastel-pink: #eed2df;
+  --color-pastel-sky: #cfe0f2;
 }
 
-/* Tailwind (utilities only to avoid resetting base styles) */
-@tailwind components;
-@tailwind utilities;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--color-plum-canvas);
+    background-image: radial-gradient(rgba(142, 113, 162, 0.14) 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: var(--color-ink-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
 
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  background: radial-gradient(circle at 25% 15%, #182029, #0d0f12 60%);
-  color: var(--color-text);
-  -moz-osx-font-smoothing: grayscale;
-}
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-ink-primary);
+    letter-spacing: -0.02em;
+  }
 
-#root {
-  width: 100%;
-  min-height: 100vh;
-  background: transparent;
-}
+  ::selection {
+    background-color: #c6e3d1;
+    color: #170e1f;
+  }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  background: #000;
-  /* flat black */
-}
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
 
-::-webkit-scrollbar-track {
-  background: #101317;
-}
+  ::-webkit-scrollbar-track {
+    background: #170e1f;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: #1e6bff;
-  border-radius: 8px;
-}
+  ::-webkit-scrollbar-thumb {
+    background: #3d2a54;
+    border-radius: 9999px;
+    border: 2px solid #170e1f;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #4d8dff;
-}
-
-/* Typography helpers */
-h1,
-h2,
-h3,
-h4,
-h5 {
-  color: var(--color-heading);
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-/* Unified section title style (matches former 'Other Technologies' title) */
-.section-title {
-  text-align: center;
-  font-size: 1.7rem;
-  font-weight: 600;
-  letter-spacing: .5px;
-  color: var(--color-heading);
-  margin: 0 0 1.8rem;
-}
-
-/* Base subtitle (no forced uppercase) */
-.section-subtitle {
-  text-align: center;
-  font-size: 1rem;
-  color: var(--color-text-soft);
-  letter-spacing: .6px;
-  margin: 0 0 2.2rem;
-  font-weight: 500;
-}
-
-/* Optional uppercase variant */
-.section-subtitle--caps {
-  text-transform: uppercase;
-  letter-spacing: .85px;
-}
-
-@media (max-width:640px) {
-  .section-title {
-    font-size: 1.55rem;
-    margin-bottom: 1.6rem;
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8e71a2;
   }
 }
 
-p {
-  color: var(--color-text-soft);
+/* Tactile Bento Board Housing */
+.bento-card {
+  background-color: var(--color-plum-housing);
+  border: 1px solid var(--color-plum-border);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(243, 237, 247, 0.05),
+    0 6px 0 #110a18;
+  transition: border-color 180ms ease, transform 180ms ease;
 }
 
-a {
-  color: var(--color-accent);
-  text-decoration: none;
-  transition: color var(--transition-base);
+.bento-card:hover {
+  border-color: #5b4078;
 }
 
-a:hover {
-  color: var(--color-accent-hover);
+/* Recessed Windowed Well (for LED badges & keyboard wells) */
+.recessed-well {
+  background-color: #140c1c;
+  border: 1px solid #302043;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
 }
 
-/* Utility classes */
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.grid {
-  display: grid;
-  gap: 2rem;
-}
-
-.flex {
-  display: flex;
-}
-
-.center {
-  display: flex;
+/* Tactile Double-Shot Keycap Button */
+.keycap {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--color-plum-keycap);
+  color: var(--color-ink-primary);
+  border: 1px solid #493364;
+  border-bottom-width: 1px;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(243, 237, 247, 0.09),
+    0 3px 0 #110a18;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 90ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 90ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
 }
 
-/* Reveal on scroll utility */
-.reveal-section {
+.keycap:hover {
+  background-color: var(--color-plum-keycap-hover);
+  border-color: #8e71a2;
+}
+
+.keycap:active,
+.keycap[data-pressed="true"] {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 1px 0 rgba(243, 237, 247, 0.06),
+    0 1px 0 #110a18;
+}
+
+.keycap:focus-visible {
+  outline: 2px solid var(--color-pastel-mint);
+  outline-offset: 2px;
+}
+
+/* Mint Accent Keycap (Primary CTA) */
+.keycap-mint {
+  background-color: var(--color-pastel-mint);
+  color: #170e1f;
+  border: 1px solid #d9efe1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 3px 0 #7fa790;
+  font-weight: 600;
+}
+
+.keycap-mint:hover {
+  background-color: #d6ede0;
+  border-color: #edf7f1;
+}
+
+.keycap-mint:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 1px 0 #7fa790;
+}
+
+/* Butter Yellow Accent Keycap (Active filter / highlight) */
+.keycap-butter {
+  background-color: var(--color-pastel-butter);
+  color: #170e1f;
+  border: 1px solid #faf2c8;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 3px 0 #9f925a;
+  font-weight: 600;
+}
+
+.keycap-butter:hover {
+  background-color: #f7eeb8;
+  border-color: #fcf7da;
+}
+
+.keycap-butter:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 1px 0 #9f925a;
+}
+
+/* Scroll reveal animation */
+.reveal-block {
   opacity: 0;
-  transform: translateY(48px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-  will-change: opacity, transform;
+  transform: translateY(16px);
+  transition: opacity 420ms ease, transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.reveal-section.is-visible {
+.reveal-block.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.reveal-section .reveal-item {
-  opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 0.65s ease, transform 0.65s ease;
-  will-change: opacity, transform;
-}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 
-.reveal-section.is-visible .reveal-item {
-  opacity: 1;
-  transform: translateY(0);
-}
+  .reveal-block {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 
-@media (max-width: 768px) {
-  .container {
-    padding: 0 1.2rem;
+  .keycap,
+  .bento-card {
+    transition: none;
   }
 }

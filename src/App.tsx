@@ -1,22 +1,23 @@
-import Header from './components/Header';
-import Profile from './components/Profile';
-import Hobbies from './components/Hobbies';
-import Skills from './components/Skills';
-import SocialMedia from './components/SocialMedia';
-import Footer from './components/Footer';
-import './App.css';
+import { ContactFooter } from './components/ContactFooter';
+import { ExperienceBento } from './components/ExperienceBento';
+import { HeroBento } from './components/HeroBento';
+import { HobbiesBento } from './components/HobbiesBento';
+import { Navbar } from './components/Navbar';
+import { ProjectsBento } from './components/ProjectsBento';
+import { TechStackBento } from './components/TechStackBento';
 
 function App() {
   return (
-    <div className="App">
-      <Header />
-      <main>
-        <Profile />
-        <Hobbies />
-        <Skills />
-        <SocialMedia />
+    <div className="min-h-screen text-[#f3edf7]">
+      <Navbar />
+      <main className="mx-auto max-w-6xl px-4 sm:px-6">
+        <HeroBento />
+        <ProjectsBento />
+        <ExperienceBento />
+        <TechStackBento />
+        <HobbiesBento />
+        <ContactFooter />
       </main>
-      <Footer />
     </div>
   );
 }
