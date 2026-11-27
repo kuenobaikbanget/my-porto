@@ -25,6 +25,7 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
   const [copied, setCopied] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const copyTimerRef = useRef<number | null>(null);
   const popoverId = useId();
 
@@ -51,6 +52,7 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
       if (event.key === 'Escape') {
         setIsOpen(false);
         setIsPinned(false);
+        triggerRef.current?.focus();
       }
     };
 
@@ -139,12 +141,12 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
       onBlur={handleBlur}
     >
       <button
+        ref={triggerRef}
         type="button"
         onClick={handleTriggerClick}
         aria-expanded={isOpen}
         aria-controls={popoverId}
-        aria-haspopup="menu"
-        className={`keycap px-4 py-2 text-xs sm:text-sm ${
+        className={`keycap min-h-[44px] px-4 py-2.5 text-xs sm:min-h-[40px] sm:py-2 sm:text-sm ${
           variant === 'mint' ? 'keycap-mint' : 'text-[var(--theme-ink-primary)]'
         }`}
       >
@@ -154,7 +156,7 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
         />
         <span>Email Me</span>
         <LuChevronDown
-          className={`h-3.5 w-3.5 transition-transform duration-150 ${
+          className={`h-3.5 w-3.5 transition-transform duration-150 motion-reduce:transition-none ${
             isOpen ? 'rotate-180' : ''
           }`}
           aria-hidden="true"
@@ -164,21 +166,19 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
       {isOpen ? (
         <div
           id={popoverId}
-          role="menu"
           aria-label="Email options"
           className={`absolute z-50 w-64 max-w-[calc(100vw-3rem)] ${alignmentClasses} ${placementClasses}`}
         >
           <div className="rounded-2xl border border-[var(--theme-border-hover)] bg-[var(--theme-housing)] p-2 shadow-[0_8px_0_var(--theme-bevel),0_14px_28px_var(--theme-popover-shadow)]">
-            <div className="mb-1.5 px-2.5 pt-1 font-mono text-[10px] tracking-wider text-[var(--theme-ink-legend)]">
+            <div className="mb-1.5 px-2.5 pt-1 font-mono text-[11px] tracking-wider text-[var(--theme-ink-legend)]">
               {email}
             </div>
 
             <div className="flex flex-col gap-1.5">
               <button
                 type="button"
-                role="menuitem"
                 onClick={handleCopyEmail}
-                className="keycap w-full justify-between px-3 py-2 text-left text-xs text-[var(--theme-ink-primary)]"
+                className="keycap min-h-[44px] w-full justify-between px-3 py-2 text-left text-xs text-[var(--theme-ink-primary)] sm:min-h-[38px]"
               >
                 <span className="inline-flex items-center gap-2">
                   {copied ? (
@@ -196,19 +196,18 @@ export const EmailActionPopover: FC<EmailActionPopoverProps> = ({
                     {copied ? 'Copied!' : 'Copy email'}
                   </span>
                 </span>
-                <span className="font-mono text-[10px] text-[var(--theme-ink-legend)]">
+                <span className="font-mono text-[11px] text-[var(--theme-ink-legend)]">
                   {copied ? 'OK' : 'CLIP'}
                 </span>
               </button>
 
               <a
                 href={`mailto:${email}`}
-                role="menuitem"
                 onClick={() => {
                   setIsOpen(false);
                   setIsPinned(false);
                 }}
-                className="keycap w-full justify-between px-3 py-2 text-left text-xs text-[var(--theme-accent-mint)] no-underline"
+                className="keycap min-h-[44px] w-full justify-between px-3 py-2 text-left text-xs text-[var(--theme-accent-mint)] no-underline sm:min-h-[38px]"
               >
                 <span className="inline-flex items-center gap-2">
                   <LuMail className="h-3.5 w-3.5" aria-hidden="true" />

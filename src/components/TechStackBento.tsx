@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { useAsciiReveal } from 'ascii-reveal';
 import { skillCategories, skillsData, type SkillCategoryKey } from '../data/skills';
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
@@ -16,9 +16,7 @@ const categoryLegendCssColor: Record<SkillCategoryKey, string> = {
 export const TechStackBento: FC = () => {
   const [activeCategory, setActiveCategory] = useState<SkillCategoryKey>('all');
   const [renderedCategory, setRenderedCategory] = useState<SkillCategoryKey>('all');
-  const [gridHeight, setGridHeight] = useState<number | null>(null);
   const hasFilteredRef = useRef(false);
-  const gridInnerRef = useRef<HTMLDivElement | null>(null);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
 
   const {
@@ -33,33 +31,6 @@ export const TechStackBento: FC = () => {
     selector: '[data-skill-grid-item]',
     revealOnMount: false,
   });
-
-  const setGridNode = useCallback(
-    (node: HTMLDivElement | null) => {
-      gridInnerRef.current = node;
-      gridRef(node);
-    },
-    [gridRef],
-  );
-
-  useEffect(() => {
-    const el = gridInnerRef.current;
-    if (!el) return;
-
-    const updateHeight = () => {
-      const nextHeight = Math.ceil(el.getBoundingClientRect().height);
-      if (nextHeight > 0) {
-        setGridHeight(nextHeight);
-      }
-    };
-
-    updateHeight();
-
-    if (typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(updateHeight);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     if (activeCategory === renderedCategory) return;
@@ -105,10 +76,10 @@ export const TechStackBento: FC = () => {
       />
 
       <div className="bento-card p-5 sm:p-6">
-        {/* Filter Keycap Tabs */}
+        {/* Filter Keycap Controls */}
         <div
           className="recessed-well mb-5 flex flex-wrap gap-2 rounded-2xl p-2"
-          role="tablist"
+          role="group"
           aria-label="Filter toolbox by category"
         >
           {skillCategories.map((cat) => {
@@ -117,15 +88,14 @@ export const TechStackBento: FC = () => {
               <button
                 key={cat.key}
                 type="button"
-                role="tab"
-                aria-selected={isActive}
+                aria-pressed={isActive}
                 onClick={() => setActiveCategory(cat.key)}
-                className={`keycap px-3 py-1.5 text-xs ${
+                className={`keycap min-h-[44px] px-3 py-2 text-xs sm:min-h-[36px] sm:py-1.5 ${
                   isActive ? 'keycap-butter' : 'text-[var(--theme-ink-muted)]'
                 }`}
               >
                 <span
-                  className="text-[10px] opacity-85"
+                  className="text-[11px] opacity-90"
                   style={!isActive ? { color: categoryLegendCssColor[cat.key] } : undefined}
                 >
                   [{cat.legend}]
@@ -136,16 +106,11 @@ export const TechStackBento: FC = () => {
           })}
         </div>
 
-        {/* Bento Keycap Matrix — smooth height transition when filtering/resizing */}
-        <div
-          className="overflow-hidden transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-          style={gridHeight !== null ? { height: `${gridHeight}px` } : undefined}
-        >
-          <div ref={setGridNode} className="flex flex-wrap gap-2.5 pb-1">
-            {filteredSkills.map((skill) => (
-              <SkillKeycap key={`${skill.category}-${skill.name}`} skill={skill} />
-            ))}
-          </div>
+        {/* Bento Keycap Matrix */}
+        <div ref={gridRef} className="flex flex-wrap gap-2.5 pb-1">
+          {filteredSkills.map((skill) => (
+            <SkillKeycap key={`${skill.category}-${skill.name}`} skill={skill} />
+          ))}
         </div>
       </div>
     </section>

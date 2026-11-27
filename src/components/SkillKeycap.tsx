@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState, type FC } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { useEffect, useRef, useState, type FC, type FocusEvent, type PointerEvent } from 'react';
 import { type IconType } from 'react-icons';
 import { FaJava } from 'react-icons/fa6';
 import {
@@ -41,22 +40,11 @@ const categoryAccentDot: Record<Exclude<SkillCategoryKey, 'all'>, string> = {
   security: 'bg-[var(--theme-accent-pink-dot)]',
 };
 
-const categoryAccentHexByTheme: Record<
-  'dark' | 'light',
-  Record<Exclude<SkillCategoryKey, 'all'>, string>
-> = {
-  dark: {
-    iot: '#f3e6a2',
-    linux: '#cfe0f2',
-    dev: '#c6e3d1',
-    security: '#eed2df',
-  },
-  light: {
-    iot: '#725209',
-    linux: '#2d5582',
-    dev: '#166852',
-    security: '#873258',
-  },
+const categoryAccentCssVar: Record<Exclude<SkillCategoryKey, 'all'>, string> = {
+  iot: '--theme-accent-butter',
+  linux: '--theme-accent-sky',
+  dev: '--theme-accent-mint',
+  security: '--theme-accent-pink',
 };
 
 const logoTerminalPreset = {
@@ -137,21 +125,22 @@ interface SkillKeycapProps {
 }
 
 export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
-  const [isActive, setIsActive] = useState(false);
-  const { theme } = useTheme();
-  const Icon = skillIconMap[skill.name] ?? LuCpu;
-  const accentHex = categoryAccentHexByTheme[theme][skill.category];
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
+  const [iconDataUri, setIconDataUri] = useState<string | null>(null);
+  const [accentColor, setAccentColor] = useState<string>('');
 
-  const iconDataUri = useMemo(() => {
-    const markup = renderToStaticMarkup(
-      <Icon
-        color={accentHex}
-        size={40}
-        xmlns="http://www.w3.org/2000/svg"
-      />,
-    );
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
-  }, [Icon, accentHex]);
+  const { theme } = useTheme();
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const svgHostRef = useRef<HTMLSpanElement | null>(null);
+  const revealOriginRef = useRef<'pointer' | 'center'>('center');
+  const isActive = isHovered || isFocused || isPinned;
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
+
+  const Icon = skillIconMap[skill.name] ?? LuCpu;
+  const cssVarName = categoryAccentCssVar[skill.category];
 
   const { ref: logoRef, reveal, hide } = useAsciiReveal({
     preset: logoTerminalPreset,
@@ -161,33 +150,100 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
     revealOnMount: false,
   });
 
+  // Serialize the icon SVG lazily on demand using live CSS theme tokens.
   useEffect(() => {
-    void hide({ instant: true });
-  }, [hide]);
+    if (!isActive) {
+      setIconDataUri(null);
+      void hide({ instant: true });
+      return;
+    }
 
-  const handleReveal = () => {
-    setIsActive(true);
-    void reveal({ origin: 'pointer' });
+    const host = svgHostRef.current;
+    const btn = buttonRef.current;
+    if (!host || !btn) return;
+
+    const svgEl = host.querySelector('svg');
+    if (!svgEl) return;
+
+    const resolvedColor =
+      getComputedStyle(btn).getPropertyValue(cssVarName).trim() || '#f3edf7';
+    setAccentColor(resolvedColor);
+
+    const clone = svgEl.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('width', '40');
+    clone.setAttribute('height', '40');
+    clone.style.color = resolvedColor;
+
+    const serialized = new XMLSerializer().serializeToString(clone);
+    setIconDataUri(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(serialized)}`);
+  }, [isActive, theme, cssVarName, hide]);
+
+  useEffect(() => {
+    if (!isPinned) return;
+    const handleOutsidePointerDown = (event: globalThis.PointerEvent) => {
+      const target = event.target as Node | null;
+      if (buttonRef.current && target && !buttonRef.current.contains(target)) {
+        setIsPinned(false);
+      }
+    };
+    document.addEventListener('pointerdown', handleOutsidePointerDown);
+    return () => document.removeEventListener('pointerdown', handleOutsidePointerDown);
+  }, [isPinned]);
+
+  const handlePointerEnter = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse') {
+      revealOriginRef.current = 'pointer';
+      setIsHovered(true);
+    }
   };
 
-  const handleHide = () => {
-    setIsActive(false);
-    void hide({ instant: true });
+  const handlePointerLeave = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse') {
+      setIsHovered(false);
+    }
+  };
+
+  const handleFocus = (event: FocusEvent<HTMLButtonElement>) => {
+    if (event.currentTarget.matches(':focus-visible')) {
+      revealOriginRef.current = 'center';
+      setIsFocused(true);
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    setIsPinned(false);
+  };
+
+  const handleClick = () => {
+    revealOriginRef.current = 'pointer';
+    setIsPinned((prev) => !prev);
+  };
+
+  const handleImageLoad = () => {
+    if (isActiveRef.current) {
+      void reveal({ origin: revealOriginRef.current });
+    }
   };
 
   return (
-    <div
-      tabIndex={0}
-      onMouseEnter={handleReveal}
-      onMouseLeave={handleHide}
-      onFocus={handleReveal}
-      onBlur={handleHide}
-      className="keycap group relative w-fit overflow-hidden px-3.5 py-2.5 text-left"
+    <button
+      ref={buttonRef}
+      type="button"
+      aria-pressed={isPinned}
+      aria-label={`${skill.name} (${skill.legend}) — ${isActive ? 'hide' : 'reveal'} logo`}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onClick={handleClick}
+      className="keycap group relative min-h-[44px] w-fit max-w-full overflow-hidden px-3.5 py-2 text-left"
     >
       <div
         data-skill-grid-item=""
         data-ascii="surface"
-        className={`min-w-0 transition-opacity duration-150 ${
+        className={`min-w-0 transition-opacity duration-150 motion-reduce:transition-none ${
           isActive ? 'opacity-0' : 'opacity-100'
         }`}
       >
@@ -196,34 +252,42 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
             className={`h-1.5 w-1.5 shrink-0 rounded-full ${categoryAccentDot[skill.category]}`}
             aria-hidden="true"
           />
-          <span className="font-mono text-[10px] tracking-wider text-[var(--theme-ink-legend)]">
+          <span className="font-mono text-[11px] tracking-wider text-[var(--theme-ink-legend)]">
             {skill.legend}
           </span>
         </div>
-        <div className="whitespace-nowrap font-sans text-xs font-semibold text-[var(--theme-ink-primary)] sm:text-sm">
+        <div className="font-sans text-xs font-semibold text-[var(--theme-ink-primary)] sm:text-sm">
           {skill.name}
         </div>
       </div>
 
-      {/* Full-keycap ASCII reveal overlay showing the skill logo */}
-      <div
-        ref={logoRef}
-        aria-hidden="true"
-        style={{ color: accentHex }}
-        className={`pointer-events-none absolute inset-0 flex items-center justify-center rounded-[9px] ${
-          isActive ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <div
-          data-ascii="surface"
-          className="absolute inset-0 rounded-[9px] bg-[var(--theme-keycap)]"
-        />
-        <img
-          src={iconDataUri}
-          alt=""
-          className="relative z-[1] h-9 w-9 shrink-0 object-contain"
-        />
-      </div>
-    </div>
+      {/* On-demand icon SVG host + ASCII reveal overlay (mounted only while active) */}
+      {isActive ? (
+        <>
+          <span ref={svgHostRef} className="hidden" aria-hidden="true">
+            <Icon size={40} />
+          </span>
+          <div
+            ref={logoRef}
+            aria-hidden="true"
+            style={{ color: accentColor || `var(${cssVarName})` }}
+            className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[9px]"
+          >
+            <div
+              data-ascii="surface"
+              className="absolute inset-0 rounded-[9px] bg-[var(--theme-keycap)]"
+            />
+            {iconDataUri ? (
+              <img
+                src={iconDataUri}
+                alt=""
+                onLoad={handleImageLoad}
+                className="relative z-[1] h-9 w-9 shrink-0 object-contain"
+              />
+            ) : null}
+          </div>
+        </>
+      ) : null}
+    </button>
   );
 };

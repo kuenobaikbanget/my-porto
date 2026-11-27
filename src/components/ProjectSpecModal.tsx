@@ -1,102 +1,39 @@
-import {
-  useEffect,
-  useRef,
-  type FC,
-} from 'react';
+import { useRef, type FC } from 'react';
 import {
   LuArrowUpRight,
-  LuCpu,
   LuExternalLink,
   LuGithub,
   LuLayers,
-  LuSmartphone,
-  LuTerminal,
   LuX,
 } from 'react-icons/lu';
-import type { ProjectAccent, ProjectItem } from '../data/projects';
+import type { ProjectItem } from '../data/projects';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useHyprPresence } from '../hooks/useHyprPresence';
+import {
+  accentBadgeStyles,
+  accentDotStyles,
+  renderProjectIcon,
+} from '../utils/projectThemeUtils';
 
 interface ProjectSpecModalProps {
   project: ProjectItem | null;
   onClose: () => void;
 }
 
-const accentBadgeStyles: Record<ProjectAccent, string> = {
-  butter:
-    'border-[var(--theme-accent-butter-border)] bg-[var(--theme-accent-butter-bg)] text-[var(--theme-accent-butter)]',
-  mint: 'border-[var(--theme-accent-mint-border)] bg-[var(--theme-accent-mint-bg)] text-[var(--theme-accent-mint)]',
-  pink: 'border-[var(--theme-accent-pink-border)] bg-[var(--theme-accent-pink-bg)] text-[var(--theme-accent-pink)]',
-};
-
-const accentDotStyles: Record<ProjectAccent, string> = {
-  butter: 'bg-[var(--theme-accent-butter-dot)]',
-  mint: 'bg-[var(--theme-accent-mint-dot)]',
-  pink: 'bg-[var(--theme-accent-pink-dot)]',
-};
-
-function renderProjectIcon(id: string) {
-  if (id === 'opspilot') {
-    return (
-      <LuTerminal
-        className="h-5 w-5 text-[var(--theme-accent-butter)]"
-        aria-hidden="true"
-      />
-    );
-  }
-  if (id === 'finnote') {
-    return (
-      <LuSmartphone
-        className="h-5 w-5 text-[var(--theme-accent-mint)]"
-        aria-hidden="true"
-      />
-    );
-  }
-  return (
-    <LuCpu
-      className="h-5 w-5 text-[var(--theme-accent-pink)]"
-      aria-hidden="true"
-    />
-  );
-}
-
 export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
   project,
   onClose,
 }) => {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const { isMounted, isClosing, displayValue: activeProject } = useHyprPresence(project);
 
-  useEffect(() => {
-    if (!project) return;
-
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    const focusTimer = window.setTimeout(() => {
-      closeButtonRef.current?.focus();
-    }, 30);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.clearTimeout(focusTimer);
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
-    };
-  }, [project, onClose]);
+  useDialogA11y({
+    isOpen: Boolean(project),
+    onClose,
+    dialogRef,
+    initialFocusRef: closeButtonRef,
+  });
 
   if (!isMounted || !activeProject) return null;
 
@@ -105,12 +42,14 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
       className={`fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-backdrop)] p-3 backdrop-blur-sm sm:p-6 ${
         isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
       }`}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="spec-modal-title"
+      aria-hidden={isClosing || undefined}
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="spec-modal-title"
         className={`bento-card flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden ${
           isClosing ? 'hypr-modal-out' : 'hypr-modal-in'
         }`}
@@ -120,7 +59,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
         <div className="flex items-start justify-between gap-3 border-b border-[var(--theme-border)] bg-[var(--theme-terminal-bar)] px-5 py-4 sm:px-6">
           <div className="flex min-w-0 items-start gap-3">
             <div className="recessed-well mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-              {renderProjectIcon(activeProject.id)}
+              {renderProjectIcon(activeProject.id, 'h-5 w-5')}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
@@ -155,7 +94,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="keycap shrink-0 px-2.5 py-1.5 text-xs text-[var(--theme-ink-primary)]"
+            className="keycap min-h-[44px] min-w-[44px] shrink-0 px-3 py-2 text-xs text-[var(--theme-ink-primary)] sm:min-h-[36px] sm:min-w-0 sm:px-2.5 sm:py-1.5"
             aria-label="Close project spec sheet"
           >
             <span>ESC</span>
@@ -167,7 +106,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
           {/* Overview / Problem */}
           <div>
-            <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--theme-ink-legend)]">
+            <p className="mb-2 font-mono text-xs font-semibold uppercase tracking-wider text-[var(--theme-ink-legend)]">
               01 // Overview &amp; Problem
             </p>
             <div className="recessed-well rounded-2xl p-4">
@@ -182,7 +121,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
 
           {/* Architecture & Stack */}
           <div>
-            <p className="mb-2 flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--theme-ink-legend)]">
+            <p className="mb-2 flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-[var(--theme-ink-legend)]">
               <LuLayers className="h-3.5 w-3.5" aria-hidden="true" />
               <span>02 // Architecture &amp; Stack</span>
             </p>
@@ -212,7 +151,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
 
           {/* Key Highlights */}
           <div>
-            <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--theme-ink-legend)]">
+            <p className="mb-2 font-mono text-xs font-semibold uppercase tracking-wider text-[var(--theme-ink-legend)]">
               03 // Key Highlights
             </p>
             <ul className="space-y-1.5 rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-well)]/60 p-4 text-xs text-[var(--theme-ink-muted)] sm:text-sm">
@@ -241,7 +180,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
                 href={activeProject.repoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="keycap keycap-mint px-3.5 py-1.5 text-xs no-underline"
+                className="keycap keycap-mint min-h-[44px] px-4 py-2 text-xs no-underline sm:min-h-[36px] sm:px-3.5 sm:py-1.5"
               >
                 <LuGithub className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>GitHub Repo</span>
@@ -254,7 +193,7 @@ export const ProjectSpecModal: FC<ProjectSpecModalProps> = ({
                 href={activeProject.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="keycap px-3.5 py-1.5 text-xs text-[var(--theme-ink-primary)] no-underline"
+                className="keycap min-h-[44px] px-4 py-2 text-xs text-[var(--theme-ink-primary)] no-underline sm:min-h-[36px] sm:px-3.5 sm:py-1.5"
               >
                 <LuExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Live Demo</span>

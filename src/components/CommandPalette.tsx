@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type FC, type KeyboardEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FC,
+  type KeyboardEvent,
+} from 'react';
 import {
   LuArrowUpRight,
   LuCheck,
@@ -14,6 +22,7 @@ import {
 import { useTheme } from '../context/useTheme';
 import { profileData } from '../data/profile';
 import { projectsData, type ProjectItem } from '../data/projects';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useHyprPresence } from '../hooks/useHyprPresence';
 
 interface CommandPaletteProps {
@@ -50,6 +59,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
   const [terminalOutput, setTerminalOutput] = useState<TerminalOutputBlock | null>(null);
   const [copiedNotice, setCopiedNotice] = useState(false);
 
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const copyTimerRef = useRef<number | null>(null);
@@ -57,6 +67,13 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
   const { isMounted, isClosing } = useHyprPresence(isOpen);
 
   const isLight = theme === 'light';
+
+  useDialogA11y({
+    isOpen,
+    onClose,
+    dialogRef,
+    initialFocusRef: inputRef,
+  });
 
   useEffect(() => {
     return () => {
@@ -68,40 +85,11 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-
     setQuery('');
     setSelectedIndex(0);
+  }, [isOpen]);
 
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    const focusTimer = window.setTimeout(() => {
-      inputRef.current?.focus();
-    }, 10);
-
-    const handleWindowKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleWindowKeyDown);
-    return () => {
-      window.clearTimeout(focusTimer);
-      window.removeEventListener('keydown', handleWindowKeyDown);
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
-    };
-  }, [isOpen, onClose]);
-
-  const executeCopyEmail = async () => {
+  const executeCopyEmail = useCallback(async () => {
     let copied = false;
     if (navigator.clipboard?.writeText) {
       try {
@@ -140,113 +128,116 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
       window.clearTimeout(copyTimerRef.current);
     }
     copyTimerRef.current = window.setTimeout(() => setCopiedNotice(false), 2200);
-  };
+  }, []);
 
-  const runTerminalCommand = (rawCommand: string) => {
-    const cmd = rawCommand.trim().toLowerCase() as TerminalCommandName;
+  const runTerminalCommand = useCallback(
+    (rawCommand: string) => {
+      const cmd = rawCommand.trim().toLowerCase() as TerminalCommandName;
 
-    if (cmd === 'clear') {
-      setTerminalOutput(null);
-      setQuery('');
-      return;
-    }
+      if (cmd === 'clear') {
+        setTerminalOutput(null);
+        setQuery('');
+        return;
+      }
 
-    if (cmd === 'theme') {
-      const nextName = isLight ? 'Dark' : 'Light';
-      toggleTheme({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+      if (cmd === 'theme') {
+        const nextName = isLight ? 'Dark' : 'Light';
+        toggleTheme({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+        setTerminalOutput({
+          command: 'theme --toggle',
+          tone: 'pink',
+          lines: [`[OK] Theme switched -> ${nextName}`],
+        });
+        setQuery('');
+        return;
+      }
+
+      if (cmd === 'whoami') {
+        setTerminalOutput({
+          command: 'whoami',
+          tone: 'mint',
+          lines: [
+            `${profileData.name} (${profileData.handle})`,
+            `role   : ${profileData.statusLabel}`,
+            `school : ${profileData.degree} @ ${profileData.university}`,
+            `focus  : ${profileData.focusPills.join(' · ')}`,
+          ],
+        });
+        setQuery('');
+        return;
+      }
+
+      if (cmd === 'status') {
+        setTerminalOutput({
+          command: 'status',
+          tone: 'butter',
+          lines: [
+            `acad   : 3rd-Year Undergraduate · Active in KSM Robotics`,
+            `work   : ${profileData.statusLabel}`,
+            `loc    : ${profileData.location}`,
+            `theme  : ${isLight ? 'Light' : 'Dark'}`,
+          ],
+        });
+        setQuery('');
+        return;
+      }
+
+      if (cmd === 'ping') {
+        setTerminalOutput({
+          command: 'ping -c 3 kueno.web.id',
+          tone: 'mint',
+          lines: [
+            'PING kueno.web.id (kuenobaikbanget): 56 data bytes',
+            '64 bytes from kueno.web.id: icmp_seq=0 ttl=64 time=11.4 ms',
+            '64 bytes from kueno.web.id: icmp_seq=1 ttl=64 time=12.1 ms',
+            '64 bytes from kueno.web.id: icmp_seq=2 ttl=64 time=10.8 ms',
+            '--- 3 packets transmitted, 3 received, 0.0% packet loss ---',
+          ],
+        });
+        setQuery('');
+        return;
+      }
+
+      if (cmd === 'cat') {
+        setTerminalOutput({
+          command: 'cat ~/cat.tty',
+          tone: 'pink',
+          lines: [
+            '   /\\_/\\    zZz   [CAT.EXE // DESKMAT]',
+            '  ( -.- )  .      "tuxedo cat sleeping beside the keyboard"',
+            '  />   <\\         tip: click the ~/cat.tty card in Hero to poke.',
+          ],
+        });
+        setQuery('');
+        return;
+      }
+
+      if (cmd === 'help') {
+        setTerminalOutput({
+          command: 'help',
+          tone: 'info',
+          lines: [
+            'Available terminal commands:',
+            '  whoami   identity, academic track & focus areas',
+            '  status   academic standing, KSM Robotics & internship role',
+            '  ping     latency check to kueno.web.id',
+            '  cat      inspect the deskmat tuxedo cat process',
+            '  theme    toggle Dark <-> Light theme',
+            '  clear    clear terminal output',
+          ],
+        });
+        setQuery('');
+        return;
+      }
+
       setTerminalOutput({
-        command: 'theme --toggle',
+        command: rawCommand.trim(),
         tone: 'pink',
-        lines: [`[OK] Theme switched -> ${nextName}`],
+        lines: [`command not found: ${rawCommand.trim()}. Type "help" for available commands.`],
       });
-      setQuery('');
-      return;
-    }
-
-    if (cmd === 'whoami') {
-      setTerminalOutput({
-        command: 'whoami',
-        tone: 'mint',
-        lines: [
-          `${profileData.name} (${profileData.handle})`,
-          `role   : ${profileData.statusLabel}`,
-          `school : ${profileData.degree} @ ${profileData.university}`,
-          `focus  : ${profileData.focusPills.join(' · ')}`,
-        ],
-      });
-      setQuery('');
-      return;
-    }
-
-    if (cmd === 'status') {
-      setTerminalOutput({
-        command: 'status',
-        tone: 'butter',
-        lines: [
-          `acad   : 3rd-Year Undergraduate · Active in KSM Robotics`,
-          `work   : ${profileData.statusLabel}`,
-          `loc    : ${profileData.location}`,
-          `theme  : ${isLight ? 'Light' : 'Dark'}`,
-        ],
-      });
-      setQuery('');
-      return;
-    }
-
-    if (cmd === 'ping') {
-      setTerminalOutput({
-        command: 'ping -c 3 kueno.web.id',
-        tone: 'mint',
-        lines: [
-          'PING kueno.web.id (kuenobaikbanget): 56 data bytes',
-          '64 bytes from kueno.web.id: icmp_seq=0 ttl=64 time=11.4 ms',
-          '64 bytes from kueno.web.id: icmp_seq=1 ttl=64 time=12.1 ms',
-          '64 bytes from kueno.web.id: icmp_seq=2 ttl=64 time=10.8 ms',
-          '--- 3 packets transmitted, 3 received, 0.0% packet loss ---',
-        ],
-      });
-      setQuery('');
-      return;
-    }
-
-    if (cmd === 'cat') {
-      setTerminalOutput({
-        command: 'cat ~/cat.tty',
-        tone: 'pink',
-        lines: [
-          '   /\\_/\\    zZz   [CAT.EXE // DESKMAT]',
-          '  ( -.- )  .      "tuxedo cat sleeping beside the keyboard"',
-          '  />   <\\         tip: click the ~/cat.tty card in Hero to poke.',
-        ],
-      });
-      setQuery('');
-      return;
-    }
-
-    if (cmd === 'help') {
-      setTerminalOutput({
-        command: 'help',
-        tone: 'info',
-        lines: [
-          'Available terminal commands:',
-          '  whoami   identity, academic track & focus areas',
-          '  status   academic standing, KSM Robotics & internship role',
-          '  ping     latency check to kueno.web.id',
-          '  cat      inspect the deskmat tuxedo cat process',
-          '  theme    toggle Dark <-> Light theme',
-          '  clear    clear terminal output',
-        ],
-      });
-      setQuery('');
-      return;
-    }
-
-    setTerminalOutput({
-      command: rawCommand.trim(),
-      tone: 'pink',
-      lines: [`command not found: ${rawCommand.trim()}. Type "help" for available commands.`],
-    });
-  };
+    },
+    [isLight, toggleTheme],
+  );
 
   const trimmedQuery = query.trim().toLowerCase();
   const isExactTerminalCmd = (TERMINAL_COMMANDS as readonly string[]).includes(trimmedQuery);
@@ -255,7 +246,10 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     const jumpTo = (sectionId: string) => {
       onClose();
       window.setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document
+          .getElementById(sectionId)
+          ?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
       }, 20);
     };
 
@@ -377,7 +371,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     }));
 
     return [...actionItems, ...projectItems, ...navItems];
-  }, [copiedNotice, isLight, onClose, onOpenProject, toggleTheme]);
+  }, [copiedNotice, executeCopyEmail, isLight, onClose, onOpenProject, toggleTheme]);
 
   const filteredItems = useMemo(() => {
     const items: PaletteItem[] = [];
@@ -401,8 +395,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
       : baseItems;
 
     return [...items, ...matched];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseItems, isExactTerminalCmd, trimmedQuery]);
+  }, [baseItems, isExactTerminalCmd, runTerminalCommand, trimmedQuery]);
 
   useEffect(() => {
     setSelectedIndex(0);
@@ -486,12 +479,14 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
       className={`fixed inset-0 z-50 flex items-start justify-center bg-[var(--theme-backdrop)] px-3 pt-16 pb-6 backdrop-blur-sm sm:px-4 sm:pt-24 ${
         isClosing ? 'hypr-backdrop-out' : 'hypr-backdrop-in'
       }`}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Terminal Command Palette"
+      aria-hidden={isClosing || undefined}
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Terminal Command Palette"
         className={`bento-card flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden ${
           isClosing ? 'hypr-runner-out' : 'hypr-runner-in'
         }`}
@@ -514,7 +509,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="keycap px-2 py-0.5 text-[11px] text-[var(--theme-ink-muted)]"
+            className="keycap min-h-[44px] min-w-[44px] px-2.5 py-1 text-[11px] text-[var(--theme-ink-muted)] sm:min-h-[34px] sm:min-w-0 sm:px-2 sm:py-0.5"
             aria-label="Close command palette"
           >
             <span>ESC</span>
@@ -542,7 +537,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
 
           {/* Quick Terminal Command Chips */}
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 font-mono text-[10px] uppercase tracking-wider text-[var(--theme-ink-legend)]">
+            <span className="mr-1 font-mono text-[11px] uppercase tracking-wider text-[var(--theme-ink-legend)]">
               tty:
             </span>
             {(['whoami', 'status', 'ping', 'cat', 'help'] as const).map((cmd) => (
@@ -550,7 +545,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                 key={cmd}
                 type="button"
                 onClick={() => runTerminalCommand(cmd)}
-                className="rounded-md border border-[var(--theme-border)] bg-[var(--theme-keycap)] px-2 py-0.5 font-mono text-[11px] text-[var(--theme-ink-muted)] transition-colors hover:border-[var(--theme-ink-legend)] hover:text-[var(--theme-ink-primary)]"
+                className="min-h-[36px] rounded-md border border-[var(--theme-border)] bg-[var(--theme-keycap)] px-2.5 py-1 font-mono text-[11px] text-[var(--theme-ink-muted)] transition-colors hover:border-[var(--theme-ink-legend)] hover:text-[var(--theme-ink-primary)] motion-reduce:transition-none sm:min-h-[28px] sm:px-2 sm:py-0.5"
               >
                 {cmd}
               </button>
@@ -566,7 +561,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
               <button
                 type="button"
                 onClick={() => setTerminalOutput(null)}
-                className="cursor-pointer text-[10px] text-[var(--theme-ink-muted)] underline hover:text-[var(--theme-ink-primary)]"
+                className="min-h-[32px] cursor-pointer px-1 text-[11px] text-[var(--theme-ink-muted)] underline hover:text-[var(--theme-ink-primary)] sm:min-h-0 sm:px-0"
               >
                 clear
               </button>
@@ -603,7 +598,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                     data-palette-idx={idx}
                     onMouseEnter={() => setSelectedIndex(idx)}
                     onClick={item.run}
-                    className={`flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                    className={`flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors motion-reduce:transition-none ${
                       isSelected
                         ? 'border-[var(--theme-ink-legend)] bg-[var(--theme-keycap-active)] text-[var(--theme-ink-primary)]'
                         : 'border-transparent bg-transparent text-[var(--theme-ink-muted)] hover:bg-[var(--theme-keycap)]'
@@ -617,13 +612,25 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                         <div className="truncate font-mono text-xs font-medium text-[var(--theme-ink-primary)]">
                           {item.label}
                         </div>
-                        <div className="font-mono text-[10px] text-[var(--theme-ink-legend)]">
+                        <div
+                          className={`font-mono text-[11px] ${
+                            isSelected
+                              ? 'text-[var(--theme-ink-muted)]'
+                              : 'text-[var(--theme-ink-legend)]'
+                          }`}
+                        >
                           {item.group}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-1.5 font-mono text-[10px] text-[var(--theme-ink-legend)]">
+                    <div
+                      className={`flex shrink-0 items-center gap-1.5 font-mono text-[11px] ${
+                        isSelected
+                          ? 'text-[var(--theme-ink-muted)]'
+                          : 'text-[var(--theme-ink-legend)]'
+                      }`}
+                    >
                       <span>{item.hint}</span>
                       {item.hint === 'external' ? (
                         <LuArrowUpRight className="h-3 w-3" aria-hidden="true" />
@@ -637,7 +644,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
         </div>
 
         {/* Footer Hints */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--theme-border)] bg-[var(--theme-terminal-bar)] px-4 py-2 font-mono text-[10px] text-[var(--theme-ink-legend)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--theme-border)] bg-[var(--theme-terminal-bar)] px-4 py-2 font-mono text-[11px] text-[var(--theme-ink-legend)]">
           <div className="flex items-center gap-3">
             <span>↑↓ navigate</span>
             <span>↵ execute</span>

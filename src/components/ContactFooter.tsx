@@ -37,7 +37,7 @@ export const ContactFooter: FC = () => {
               href={profileData.socials.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="keycap px-3 py-1.5 text-xs text-[var(--theme-ink-primary)] no-underline"
+              className="keycap min-h-[44px] px-3.5 py-2 text-xs text-[var(--theme-ink-primary)] no-underline sm:min-h-[36px] sm:px-3 sm:py-1.5"
             >
               <LuGithub className="h-3.5 w-3.5" aria-hidden="true" />
               <span>GitHub</span>
@@ -46,7 +46,7 @@ export const ContactFooter: FC = () => {
               href={profileData.socials.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="keycap px-3 py-1.5 text-xs text-[var(--theme-accent-sky)] no-underline"
+              className="keycap min-h-[44px] px-3.5 py-2 text-xs text-[var(--theme-accent-sky)] no-underline sm:min-h-[36px] sm:px-3 sm:py-1.5"
             >
               <LuLinkedin className="h-3.5 w-3.5" aria-hidden="true" />
               <span>LinkedIn</span>
@@ -55,14 +55,14 @@ export const ContactFooter: FC = () => {
               href={profileData.socials.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="keycap px-3 py-1.5 text-xs text-[var(--theme-accent-pink)] no-underline"
+              className="keycap min-h-[44px] px-3.5 py-2 text-xs text-[var(--theme-accent-pink)] no-underline sm:min-h-[36px] sm:px-3 sm:py-1.5"
             >
               <LuInstagram className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Instagram</span>
             </a>
           </div>
 
-          <p className="font-mono text-[11px] text-[var(--theme-ink-legend)]">
+          <p className="font-mono text-xs text-[var(--theme-ink-legend)]">
             © 2026 {profileData.name} ·{' '}
             <span className="text-[var(--theme-ink-muted)]">kueno.web.id</span>
           </p>
