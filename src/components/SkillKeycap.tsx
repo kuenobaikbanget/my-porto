@@ -128,6 +128,7 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [isOverlayMounted, setIsOverlayMounted] = useState(false);
   const [iconDataUri, setIconDataUri] = useState<string | null>(null);
   const [accentColor, setAccentColor] = useState<string>('');
 
@@ -135,6 +136,12 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const svgHostRef = useRef<HTMLSpanElement | null>(null);
   const revealOriginRef = useRef<'pointer' | 'center'>('center');
+  const isFirstRenderRef = useRef(true);
+  const logoLoadedRef = useRef(false);
+  const isOverlayMountedRef = useRef(isOverlayMounted);
+  isOverlayMountedRef.current = isOverlayMounted;
+  const iconDataUriRef = useRef(iconDataUri);
+  iconDataUriRef.current = iconDataUri;
   const isActive = isHovered || isFocused || isPinned;
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
@@ -142,7 +149,23 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
   const Icon = skillIconMap[skill.name] ?? LuCpu;
   const cssVarName = categoryAccentCssVar[skill.category];
 
-  const { ref: logoRef, reveal, hide } = useAsciiReveal({
+  const {
+    ref: labelRef,
+    reveal: revealLabel,
+    hide: hideLabel,
+  } = useAsciiReveal({
+    preset: 'terminal',
+    duration: 'fast',
+    speed: 0.9,
+    origin: 'center',
+    revealOnMount: false,
+  });
+
+  const {
+    ref: logoRef,
+    reveal: revealLogo,
+    hide: hideLogo,
+  } = useAsciiReveal({
     preset: logoTerminalPreset,
     duration: 'fast',
     speed: 0.9,
@@ -150,13 +173,41 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
     revealOnMount: false,
   });
 
-  // Serialize the icon SVG lazily on demand using live CSS theme tokens.
+  // Animate text container and logo overlay with ASCII reveal/hide transitions.
+  // Only re-runs when `isActive` actually changes so each animation fires once.
   useEffect(() => {
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      if (!isActive) return;
+    }
+
+    const origin = revealOriginRef.current;
+
     if (!isActive) {
-      setIconDataUri(null);
-      void hide({ instant: true });
+      void revealLabel({ origin });
+      if (isOverlayMountedRef.current) {
+        void hideLogo({ origin }).then(() => {
+          if (!isActiveRef.current) {
+            setIsOverlayMounted(false);
+            logoLoadedRef.current = false;
+            setIconDataUri(null);
+          }
+        });
+      }
       return;
     }
+
+    setIsOverlayMounted(true);
+    void hideLabel({ origin });
+
+    if (logoLoadedRef.current && iconDataUriRef.current) {
+      void revealLogo({ origin });
+    }
+  }, [isActive, hideLabel, revealLabel, hideLogo, revealLogo]);
+
+  // Serialize the icon SVG lazily on demand using live CSS theme tokens.
+  useEffect(() => {
+    if (!isOverlayMounted || !isActive) return;
 
     const host = svgHostRef.current;
     const btn = buttonRef.current;
@@ -176,8 +227,12 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
     clone.style.color = resolvedColor;
 
     const serialized = new XMLSerializer().serializeToString(clone);
-    setIconDataUri(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(serialized)}`);
-  }, [isActive, theme, cssVarName, hide]);
+    const nextUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(serialized)}`;
+    if (nextUri !== iconDataUriRef.current) {
+      logoLoadedRef.current = false;
+      setIconDataUri(nextUri);
+    }
+  }, [isOverlayMounted, isActive, theme, cssVarName]);
 
   useEffect(() => {
     if (!isPinned) return;
@@ -222,8 +277,9 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
   };
 
   const handleImageLoad = () => {
+    logoLoadedRef.current = true;
     if (isActiveRef.current) {
-      void reveal({ origin: revealOriginRef.current });
+      void revealLogo({ origin: revealOriginRef.current });
     }
   };
 
@@ -231,6 +287,8 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
     <button
       ref={buttonRef}
       type="button"
+      data-skill-grid-item=""
+      data-ascii="surface"
       aria-pressed={isPinned}
       aria-label={`${skill.name} (${skill.legend}) — ${isActive ? 'hide' : 'reveal'} logo`}
       onPointerEnter={handlePointerEnter}
@@ -240,15 +298,10 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
       onClick={handleClick}
       className="keycap group relative min-h-[44px] w-fit max-w-full overflow-hidden px-3.5 py-2 text-left"
     >
-      <div
-        data-skill-grid-item=""
-        data-ascii="surface"
-        className={`min-w-0 transition-opacity duration-150 motion-reduce:transition-none ${
-          isActive ? 'opacity-0' : 'opacity-100'
-        }`}
-      >
+      <div ref={labelRef} className="relative min-w-0">
         <div className="mb-0.5 flex items-center gap-1.5">
           <span
+            data-ascii="fade"
             className={`h-1.5 w-1.5 shrink-0 rounded-full ${categoryAccentDot[skill.category]}`}
             aria-hidden="true"
           />
@@ -261,8 +314,8 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
         </div>
       </div>
 
-      {/* On-demand icon SVG host + ASCII reveal overlay (mounted only while active) */}
-      {isActive ? (
+      {/* On-demand icon SVG host + ASCII reveal overlay (mounted while active or hiding) */}
+      {isOverlayMounted ? (
         <>
           <span ref={svgHostRef} className="hidden" aria-hidden="true">
             <Icon size={40} />
@@ -273,10 +326,6 @@ export const SkillKeycap: FC<SkillKeycapProps> = ({ skill }) => {
             style={{ color: accentColor || `var(${cssVarName})` }}
             className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[9px]"
           >
-            <div
-              data-ascii="surface"
-              className="absolute inset-0 rounded-[9px] bg-[var(--theme-keycap)]"
-            />
             {iconDataUri ? (
               <img
                 src={iconDataUri}

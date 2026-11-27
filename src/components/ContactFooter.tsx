@@ -63,8 +63,7 @@ export const ContactFooter: FC = () => {
           </div>
 
           <p className="font-mono text-xs text-[var(--theme-ink-legend)]">
-            © 2026 {profileData.name} ·{' '}
-            <span className="text-[var(--theme-ink-muted)]">kueno.web.id</span>
+            © 2026 {profileData.name}
           </p>
         </div>
       </div>

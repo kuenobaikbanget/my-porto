@@ -64,7 +64,6 @@ interface GridCoord {
 
 export const ActivityStatusBento: FC = () => {
   const [days, setDays] = useState<ContributionDay[]>(() => buildFallbackContributions());
-  const [dataSource, setDataSource] = useState<'loading' | 'live' | 'snapshot'>('loading');
   const [selectedDay, setSelectedDay] = useState<ContributionDay | null>(null);
   const [activeCoord, setActiveCoord] = useState<GridCoord | null>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -117,10 +116,9 @@ export const ActivityStatusBento: FC = () => {
 
         parsed.sort((a, b) => a.date.localeCompare(b.date));
         setDays(parsed);
-        setDataSource('live');
       })
       .catch(() => {
-        setDataSource('snapshot');
+        // Keep fallback snapshot contributions on fetch error
       })
       .finally(() => {
         window.clearTimeout(timeoutId);
@@ -291,13 +289,6 @@ export const ActivityStatusBento: FC = () => {
     }
   };
 
-  const statusLabel =
-    dataSource === 'live'
-      ? 'live'
-      : dataSource === 'loading'
-        ? 'syncing'
-        : 'offline snapshot';
-
   return (
     <section
       id="activity"
@@ -334,24 +325,6 @@ export const ActivityStatusBento: FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span
-                className={`recessed-well inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-[11px] ${
-                  dataSource === 'live'
-                    ? 'text-[var(--theme-accent-mint)]'
-                    : 'text-[var(--theme-ink-muted)]'
-                }`}
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    dataSource === 'live'
-                      ? 'bg-[var(--theme-accent-mint-dot)]'
-                      : 'bg-[var(--theme-accent-butter-dot)]'
-                  }`}
-                  aria-hidden="true"
-                />
-                <span>{statusLabel}</span>
-              </span>
-
               <a
                 href={profileData.socials.github}
                 target="_blank"
