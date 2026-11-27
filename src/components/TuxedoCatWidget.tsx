@@ -10,7 +10,6 @@ interface CatStage {
   intervalMs: number;
   reactionType: 'hop' | 'shake';
   badgeClass: string;
-  liveDotClass: string;
   bubbleClass: string;
   artClass: string;
   logClass: string;
@@ -29,7 +28,6 @@ const stages: CatStage[] = [
     intervalMs: 680,
     reactionType: 'hop',
     badgeClass: 'text-[#b9a7c9]',
-    liveDotClass: 'bg-[#c6e3d1]',
     bubbleClass: 'border-[#493364] bg-[#2b1d3a] text-[#cfe0f2]',
     artClass: 'text-[#b9a7c9]',
     logClass: 'text-[#8e71a2]',
@@ -64,7 +62,6 @@ const stages: CatStage[] = [
     intervalMs: 540,
     reactionType: 'hop',
     badgeClass: 'text-[#c6e3d1]',
-    liveDotClass: 'bg-[#c6e3d1]',
     bubbleClass: 'border-[#c6e3d1]/45 bg-[#2b1d3a] text-[#c6e3d1]',
     artClass: 'text-[#f3edf7]',
     logClass: 'text-[#c6e3d1]',
@@ -98,7 +95,6 @@ const stages: CatStage[] = [
     intervalMs: 480,
     reactionType: 'hop',
     badgeClass: 'text-[#f3e6a2]',
-    liveDotClass: 'bg-[#f3e6a2]',
     bubbleClass: 'border-[#f3e6a2]/45 bg-[#2b1d3a] text-[#f3e6a2]',
     artClass: 'text-[#f3edf7]',
     logClass: 'text-[#f3e6a2]',
@@ -132,7 +128,6 @@ const stages: CatStage[] = [
     intervalMs: 420,
     reactionType: 'shake',
     badgeClass: 'text-[#eed2df]',
-    liveDotClass: 'bg-[#f3e6a2]',
     bubbleClass: 'border-[#eed2df]/50 bg-[#2b1d3a] text-[#eed2df]',
     artClass: 'text-[#eed2df]',
     logClass: 'text-[#f3e6a2]',
@@ -166,7 +161,6 @@ const stages: CatStage[] = [
     intervalMs: 280,
     reactionType: 'shake',
     badgeClass: 'text-[#eed2df]',
-    liveDotClass: 'bg-[#eed2df]',
     bubbleClass: 'border-[#eed2df]/75 bg-[#362039] text-[#f3e6a2]',
     artClass: 'text-[#f3e6a2]',
     logClass: 'text-[#eed2df]',
@@ -256,19 +250,10 @@ export const TuxedoCatWidget: FC = () => {
       >
         {/* Terminal Title Bar */}
         <div className="flex items-center justify-between border-b border-[#302043] bg-[#1d1228] px-3 py-2 font-mono text-[10px] text-[#8e71a2]">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5" aria-hidden="true">
-              <span className="h-2 w-2 rounded-full bg-[#eed2df]/75" />
-              <span className="h-2 w-2 rounded-full bg-[#f3e6a2]/75" />
-              <span className="h-2 w-2 rounded-full bg-[#c6e3d1]/75" />
-            </div>
-            <span className="inline-flex items-center gap-1 rounded bg-[#140c1c] px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-[#b9a7c9]">
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${current.liveDotClass}`}
-                aria-hidden="true"
-              />
-              LIVE
-            </span>
+          <div className="flex items-center gap-1.5" aria-hidden="true">
+            <span className="h-2 w-2 rounded-full bg-[#eed2df]/75" />
+            <span className="h-2 w-2 rounded-full bg-[#f3e6a2]/75" />
+            <span className="h-2 w-2 rounded-full bg-[#c6e3d1]/75" />
           </div>
           <span className="inline-flex items-center gap-1 text-[#b9a7c9]">
             <LuTerminal className="h-3 w-3 text-[#8e71a2]" aria-hidden="true" />
