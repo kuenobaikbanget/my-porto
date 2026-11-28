@@ -24,6 +24,43 @@
       } catch (e) {
         document.documentElement.dataset.theme = 'dark';
       }
+
+      try {
+        var prefersReduced =
+          window.matchMedia &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var hasDeepHash = Boolean(window.location.hash && window.location.hash !== '#hero');
+        var navEntries =
+          window.performance && window.performance.getEntriesByType
+            ? window.performance.getEntriesByType('navigation')
+            : null;
+        var navEntry = navEntries && navEntries[0];
+        var isReload = Boolean(navEntry && navEntry.type === 'reload');
+        var seen = false;
+        try {
+          seen = window.sessionStorage.getItem('kueno-intro-seen') === '1';
+        } catch (e) {
+          seen = false;
+        }
+
+        if (!prefersReduced && !hasDeepHash && (!seen || isReload)) {
+          document.documentElement.dataset.intro = 'play';
+          try {
+            window.sessionStorage.setItem('kueno-intro-seen', '1');
+          } catch (e) {
+            // Ignore storage write errors
+          }
+          window.setTimeout(function () {
+            if (document.documentElement.dataset.intro === 'play') {
+              document.documentElement.dataset.intro = 'done';
+            }
+          }, 2200);
+        } else {
+          document.documentElement.dataset.intro = 'done';
+        }
+      } catch (e) {
+        document.documentElement.dataset.intro = 'done';
+      }
     })();
   </script>
   <link rel="canonical" href="https://kueno.web.id/" />

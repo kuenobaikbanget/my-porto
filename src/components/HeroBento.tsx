@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { CSSProperties, FC } from 'react';
 import {
   LuArrowDownRight,
   LuGithub,
@@ -15,7 +15,10 @@ export const HeroBento: FC = () => {
     <section id="hero" className="pt-6 pb-8 sm:pt-10 sm:pb-10">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Primary Identity & Recruiter Scan Card */}
-        <div className="bento-card flex flex-col justify-between p-5 sm:p-7 lg:col-span-8">
+        <div
+          className="bento-card init-tile flex flex-col justify-between p-5 sm:p-7 lg:col-span-8"
+          style={{ '--init-delay': '60ms', '--init-dur': '440ms' } as CSSProperties}
+        >
           <div>
             <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-3.5">
@@ -40,7 +43,10 @@ export const HeroBento: FC = () => {
                 </div>
               </div>
 
-              <div className="group/gpa relative shrink-0 self-start">
+              <div
+                className="group/gpa init-chip relative shrink-0 self-start"
+                style={{ '--init-delay': '220ms' } as CSSProperties}
+              >
                 <button
                   type="button"
                   aria-describedby="gpa-still-going-tooltip"
@@ -79,7 +85,8 @@ export const HeroBento: FC = () => {
                 return (
                   <span
                     key={pill}
-                    className={`inline-flex items-center rounded-lg border px-2.5 py-1 font-mono text-xs font-medium ${pillTone}`}
+                    className={`init-chip inline-flex items-center rounded-lg border px-2.5 py-1 font-mono text-xs font-medium ${pillTone}`}
+                    style={{ '--init-delay': `${200 + idx * 45}ms` } as CSSProperties}
                   >
                     {pill}
                   </span>
@@ -117,18 +124,24 @@ export const HeroBento: FC = () => {
             <div className="flex flex-wrap items-center gap-2.5">
               <a
                 href="#projects"
-                className="keycap keycap-mint min-h-[44px] px-4 py-2.5 text-xs no-underline sm:min-h-[40px] sm:py-2 sm:text-sm"
+                className="keycap keycap-mint init-keycap min-h-[44px] px-4 py-2.5 text-xs no-underline sm:min-h-[40px] sm:py-2 sm:text-sm"
+                style={{ '--init-delay': '260ms' } as CSSProperties}
               >
                 <span>View Projects</span>
                 <LuArrowDownRight className="h-4 w-4" aria-hidden="true" />
               </a>
 
-              <EmailActionPopover
-                email={profileData.email}
-                variant="plum"
-                align="right-mobile"
-                placement="bottom"
-              />
+              <div
+                className="init-keycap"
+                style={{ '--init-delay': '310ms' } as CSSProperties}
+              >
+                <EmailActionPopover
+                  email={profileData.email}
+                  variant="plum"
+                  align="right-mobile"
+                  placement="bottom"
+                />
+              </div>
 
               <div className="flex items-center gap-2">
                 <a
@@ -136,7 +149,8 @@ export const HeroBento: FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="GitHub profile"
-                  className="keycap min-h-[44px] min-w-[44px] p-3 text-[var(--theme-ink-primary)] no-underline sm:min-h-[40px] sm:min-w-[40px] sm:p-2.5"
+                  className="keycap init-keycap min-h-[44px] min-w-[44px] p-3 text-[var(--theme-ink-primary)] no-underline sm:min-h-[40px] sm:min-w-[40px] sm:p-2.5"
+                  style={{ '--init-delay': '360ms' } as CSSProperties}
                 >
                   <LuGithub className="h-4 w-4" aria-hidden="true" />
                 </a>
@@ -145,7 +159,8 @@ export const HeroBento: FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn profile"
-                  className="keycap min-h-[44px] min-w-[44px] p-3 text-[var(--theme-accent-sky)] no-underline sm:min-h-[40px] sm:min-w-[40px] sm:p-2.5"
+                  className="keycap init-keycap min-h-[44px] min-w-[44px] p-3 text-[var(--theme-accent-sky)] no-underline sm:min-h-[40px] sm:min-w-[40px] sm:p-2.5"
+                  style={{ '--init-delay': '400ms' } as CSSProperties}
                 >
                   <LuLinkedin className="h-4 w-4" aria-hidden="true" />
                 </a>
@@ -155,7 +170,10 @@ export const HeroBento: FC = () => {
         </div>
 
         {/* Interactive Sleepy Tuxedo Cat Widget */}
-        <div className="lg:col-span-4">
+        <div
+          className="init-tile lg:col-span-4"
+          style={{ '--init-delay': '120ms', '--init-dur': '340ms' } as CSSProperties}
+        >
           <TuxedoCatWidget />
         </div>
       </div>

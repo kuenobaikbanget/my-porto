@@ -5,10 +5,11 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type FC,
   type KeyboardEvent,
 } from 'react';
-import { LuArrowUpRight, LuGithub } from 'react-icons/lu';
+import { LuArrowUpRight, LuGithub, LuRefreshCw } from 'react-icons/lu';
 import {
   buildFallbackContributions,
   type ContributionDay,
@@ -20,6 +21,8 @@ import { SectionHeader } from './SectionHeader';
 
 const GITHUB_USERNAME = 'kuenobaikbanget';
 const CONTRIBUTIONS_API = `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`;
+const MIN_LOADING_VISIBLE_MS = 1150;
+const SETTLE_CLEANUP_MS = 1050;
 
 interface ApiContributionResponse {
   contributions?: Array<{
@@ -87,6 +90,7 @@ interface LedCellProps {
   col: number;
   isSelected: boolean;
   isRovingActive: boolean;
+  isSettling: boolean;
   onHover: (day: ContributionDay) => void;
   onActivate: (day: ContributionDay, row: number, col: number) => void;
   onCellKeyDown: (event: KeyboardEvent<HTMLButtonElement>, row: number, col: number) => void;
@@ -100,34 +104,64 @@ const LedCell: FC<LedCellProps> = memo(
     col,
     isSelected,
     isRovingActive,
+    isSettling,
     onHover,
     onActivate,
     onCellKeyDown,
-  }) => (
-    <div role="gridcell" className="flex">
-      <button
-        type="button"
-        tabIndex={isRovingActive ? 0 : -1}
-        data-grid-row={row}
-        data-grid-col={col}
-        onMouseEnter={() => onHover(day)}
-        onFocus={() => onActivate(day, row, col)}
-        onClick={() => onActivate(day, row, col)}
-        onKeyDown={(e) => onCellKeyDown(e, row, col)}
-        aria-label={`${formattedDate}: ${day.count} contributions`}
-        aria-pressed={isSelected}
-        className={`h-7 w-7 cursor-pointer rounded-[4px] border transition-transform duration-100 hover:scale-125 focus-visible:scale-125 focus-visible:outline-2 focus-visible:outline-[var(--theme-ink-primary)] motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-visible:scale-100 sm:aspect-square sm:h-auto sm:w-full ${
-          ledLevelStyles[day.level]
-        } ${isSelected ? 'ring-1 ring-[var(--theme-ink-primary)]' : ''}`}
-      />
-    </div>
-  ),
+  }) => {
+    const settleStyle = isSettling
+      ? ({
+          '--led-delay': `${col * 9 + row * 16}ms`,
+          ...(day.level > 0
+            ? {
+                '--led-target-bg': `var(--theme-led-${day.level})`,
+                '--led-target-glow': day.level === 4 ? 'var(--theme-led-4-glow)' : 'none',
+              }
+            : {}),
+        } as CSSProperties)
+      : undefined;
+
+    return (
+      <div role="gridcell" className="flex">
+        <button
+          type="button"
+          tabIndex={isRovingActive ? 0 : -1}
+          data-grid-row={row}
+          data-grid-col={col}
+          onMouseEnter={() => onHover(day)}
+          onFocus={() => onActivate(day, row, col)}
+          onClick={() => onActivate(day, row, col)}
+          onKeyDown={(e) => onCellKeyDown(e, row, col)}
+          aria-label={`${formattedDate}: ${day.count} contributions`}
+          aria-pressed={isSelected}
+          style={settleStyle}
+          className={`led-cell-transition h-7 w-7 cursor-pointer rounded-[4px] border hover:scale-125 focus-visible:scale-125 focus-visible:outline-2 focus-visible:outline-[var(--theme-ink-primary)] motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-visible:scale-100 sm:aspect-square sm:h-auto sm:w-full ${
+            ledLevelStyles[day.level]
+          } ${isSettling ? (day.level === 0 ? 'led-cool-off' : 'led-ignite') : ''} ${
+            isSelected ? 'ring-1 ring-[var(--theme-ink-primary)]' : ''
+          }`}
+        />
+      </div>
+    );
+  },
 );
 
 LedCell.displayName = 'LedCell';
 
+type FetchStatus = 'loading' | 'live' | 'fallback';
+
+const LED_ROWS = [0, 1, 2, 3, 4, 5, 6] as const;
+
 export const ActivityStatusBento: FC = () => {
-  const [days, setDays] = useState<ContributionDay[]>(() => buildFallbackContributions());
+  const [days, setDays] = useState<ContributionDay[]>([]);
+  const [status, setStatus] = useState<FetchStatus>('loading');
+  const [fetchedPayload, setFetchedPayload] = useState<{
+    status: 'live' | 'fallback';
+    days: ContributionDay[];
+  } | null>(null);
+  const [minDelayDone, setMinDelayDone] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
   const [selectedDay, setSelectedDay] = useState<ContributionDay | null>(null);
   const [activeCoord, setActiveCoord] = useState<GridCoord | null>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -135,6 +169,18 @@ export const ActivityStatusBento: FC = () => {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const { ref, isVisible } = useRevealOnScroll<HTMLElement>();
+
+  const targetWeekCount = isMobileViewport ? 22 : 52;
+
+  const handleRetry = useCallback(() => {
+    setSelectedDay(null);
+    setActiveCoord(null);
+    setFetchedPayload(null);
+    setMinDelayDone(false);
+    setIsSettling(false);
+    setStatus('loading');
+    setRetryToken((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -146,6 +192,7 @@ export const ActivityStatusBento: FC = () => {
   }, []);
 
   useEffect(() => {
+    let active = true;
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 5000);
 
@@ -179,23 +226,69 @@ export const ActivityStatusBento: FC = () => {
         }
 
         parsed.sort((a, b) => a.date.localeCompare(b.date));
-        setDays(parsed);
+        if (!active) return;
+        setFetchedPayload({ status: 'live', days: parsed });
       })
       .catch(() => {
-        // Keep fallback snapshot contributions on fetch error
+        if (!active) return;
+        setFetchedPayload({ status: 'fallback', days: buildFallbackContributions() });
       })
       .finally(() => {
         window.clearTimeout(timeoutId);
       });
 
     return () => {
+      active = false;
       window.clearTimeout(timeoutId);
       controller.abort();
     };
-  }, []);
+  }, [retryToken]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      setMinDelayDone(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setMinDelayDone(true);
+    }, MIN_LOADING_VISIBLE_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isVisible, retryToken]);
+
+  useEffect(() => {
+    if (status !== 'loading' || fetchedPayload === null || !minDelayDone) return;
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    setDays(fetchedPayload.days);
+    setStatus(fetchedPayload.status);
+    if (!prefersReducedMotion) {
+      setIsSettling(true);
+    }
+  }, [fetchedPayload, minDelayDone, status]);
+
+  useEffect(() => {
+    if (!isSettling) return;
+    const timer = window.setTimeout(() => {
+      setIsSettling(false);
+    }, SETTLE_CLEANUP_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isSettling]);
 
   const { rows, displayedTotal, weekCount, defaultCoord } = useMemo(() => {
-    const targetWeekCount = isMobileViewport ? 22 : 52;
     const weeks: Array<Array<ContributionDay | null>> = [];
 
     if (days.length > 0) {
@@ -245,14 +338,14 @@ export const ActivityStatusBento: FC = () => {
       weekCount: numCols,
       defaultCoord: lastCoord,
     };
-  }, [days, isMobileViewport]);
+  }, [days, targetWeekCount]);
 
   // Keep mobile horizontal scroller positioned at the most recent weeks initially.
   useEffect(() => {
     const scroller = scrollContainerRef.current;
     if (!scroller || !isMobileViewport) return;
     scroller.scrollLeft = scroller.scrollWidth;
-  }, [isMobileViewport, weekCount]);
+  }, [isMobileViewport, weekCount, status]);
 
   const resolvedActiveCoord = useMemo(() => {
     if (
@@ -390,13 +483,47 @@ export const ActivityStatusBento: FC = () => {
                 <h3 className="font-display text-base font-bold text-[var(--theme-ink-primary)] sm:text-lg">
                   GitHub LED Matrix
                 </h3>
-                <p className="font-mono text-xs text-[var(--theme-ink-legend)]">
-                  @{GITHUB_USERNAME} · {displayedTotal} contributions ({weekCount}w)
+                <p
+                  className="font-mono text-xs text-[var(--theme-ink-legend)]"
+                  aria-live="polite"
+                >
+                  {status === 'loading' ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span
+                        className="led-sync-dot h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--theme-accent-mint-dot)]"
+                        aria-hidden="true"
+                      />
+                      <span>@{GITHUB_USERNAME} · syncing live activity…</span>
+                    </span>
+                  ) : status === 'fallback' ? (
+                    `@${GITHUB_USERNAME} · ${displayedTotal} contributions (${weekCount}w) · offline snapshot`
+                  ) : (
+                    `@${GITHUB_USERNAME} · ${displayedTotal} contributions (${weekCount}w)`
+                  )}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
+              {status === 'loading' ? (
+                <span className="recessed-well inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 font-mono text-[11px] font-medium text-[var(--theme-accent-mint)]">
+                  <span
+                    className="led-sync-dot h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--theme-accent-mint-dot)]"
+                    aria-hidden="true"
+                  />
+                  <span>SYNC</span>
+                </span>
+              ) : status === 'fallback' ? (
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="keycap min-h-[36px] px-2.5 py-1 text-xs text-[var(--theme-accent-butter)]"
+                >
+                  <LuRefreshCw className="h-3 w-3" aria-hidden="true" />
+                  <span>Retry</span>
+                </button>
+              ) : null}
+
               <a
                 href={profileData.socials.github}
                 target="_blank"
@@ -415,67 +542,106 @@ export const ActivityStatusBento: FC = () => {
           {/* LED Grid Housing */}
           <div
             ref={scrollContainerRef}
+            aria-busy={status === 'loading'}
             className="recessed-well overflow-x-auto rounded-2xl p-3 sm:overflow-visible sm:p-4"
           >
-            <div
-              ref={gridRef}
-              className="flex w-max flex-col gap-1.5 sm:w-full sm:gap-1"
-              role="grid"
-              aria-label={`GitHub contributions LED matrix for ${GITHUB_USERNAME}. Use arrow keys to move across days.`}
-            >
-              {rows.map((rowDays, rowIdx) => (
-                <div
-                  key={`r-${rowIdx}`}
-                  role="row"
-                  className="grid gap-1.5 sm:gap-1"
-                  style={{
-                    gridTemplateColumns: isMobileViewport
-                      ? `repeat(${Math.max(weekCount, 1)}, 1.75rem)`
-                      : `repeat(${Math.max(weekCount, 1)}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {rowDays.map((day, colIdx) => {
-                    if (!day) {
+            {status === 'loading' ? (
+              <div
+                role="status"
+                aria-label="Syncing GitHub contributions LED matrix"
+                className="flex w-max flex-col gap-1.5 sm:w-full sm:gap-1"
+              >
+                {LED_ROWS.map((rowIdx) => (
+                  <div
+                    key={`sweep-r-${rowIdx}`}
+                    className="grid gap-1.5 sm:gap-1"
+                    style={{
+                      gridTemplateColumns: isMobileViewport
+                        ? `repeat(${targetWeekCount}, 1.75rem)`
+                        : `repeat(${targetWeekCount}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {Array.from({ length: targetWeekCount }, (_, colIdx) => (
+                      <span
+                        key={`sweep-${rowIdx}-${colIdx}`}
+                        aria-hidden="true"
+                        className="led-sweep-cell h-7 w-7 rounded-[4px] border sm:aspect-square sm:h-auto sm:w-full"
+                        style={
+                          {
+                            '--sweep-delay': `${colIdx * 15 + rowIdx * 24}ms`,
+                          } as CSSProperties
+                        }
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                ref={gridRef}
+                className="flex w-max flex-col gap-1.5 sm:w-full sm:gap-1"
+                role="grid"
+                aria-label={`GitHub contributions LED matrix for ${GITHUB_USERNAME}. Use arrow keys to move across days.`}
+              >
+                {rows.map((rowDays, rowIdx) => (
+                  <div
+                    key={`r-${rowIdx}`}
+                    role="row"
+                    className="grid gap-1.5 sm:gap-1"
+                    style={{
+                      gridTemplateColumns: isMobileViewport
+                        ? `repeat(${Math.max(weekCount, 1)}, 1.75rem)`
+                        : `repeat(${Math.max(weekCount, 1)}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {rowDays.map((day, colIdx) => {
+                      if (!day) {
+                        return (
+                          <span
+                            key={`empty-${rowIdx}-${colIdx}`}
+                            role="gridcell"
+                            aria-hidden="true"
+                            className="h-7 w-7 rounded-[4px] opacity-0 sm:aspect-square sm:h-auto sm:w-full"
+                          />
+                        );
+                      }
+
+                      const isSelected = selectedDay?.date === day.date;
+                      const isRovingActive =
+                        resolvedActiveCoord?.row === rowIdx &&
+                        resolvedActiveCoord?.col === colIdx;
+
                       return (
-                        <span
-                          key={`empty-${rowIdx}-${colIdx}`}
-                          role="gridcell"
-                          aria-hidden="true"
-                          className="h-7 w-7 rounded-[4px] opacity-0 sm:aspect-square sm:h-auto sm:w-full"
+                        <LedCell
+                          key={day.date}
+                          day={day}
+                          formattedDate={formatContributionDate(day.date)}
+                          row={rowIdx}
+                          col={colIdx}
+                          isSelected={isSelected}
+                          isRovingActive={isRovingActive}
+                          isSettling={isSettling}
+                          onHover={handleCellHover}
+                          onActivate={handleCellActivate}
+                          onCellKeyDown={handleCellKeyDown}
                         />
                       );
-                    }
-
-                    const isSelected = selectedDay?.date === day.date;
-                    const isRovingActive =
-                      resolvedActiveCoord?.row === rowIdx &&
-                      resolvedActiveCoord?.col === colIdx;
-
-                    return (
-                      <LedCell
-                        key={day.date}
-                        day={day}
-                        formattedDate={formatContributionDate(day.date)}
-                        row={rowIdx}
-                        col={colIdx}
-                        isSelected={isSelected}
-                        isRovingActive={isRovingActive}
-                        onHover={handleCellHover}
-                        onActivate={handleCellActivate}
-                        onCellKeyDown={handleCellKeyDown}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Interactive Readout & Intensity Scale */}
         <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2 font-mono text-[11px]">
           <div className="recessed-well min-w-0 flex-1 rounded-xl px-3 py-1.5 text-[var(--theme-ink-muted)]">
-            {selectedDay ? (
+            {status === 'loading' ? (
+              <span className="block truncate text-[var(--theme-accent-mint)]">
+                POST // scanning GitHub contributions stream…
+              </span>
+            ) : selectedDay ? (
               <span className="block truncate">
                 <span className="font-semibold text-[var(--theme-accent-mint)]">
                   {selectedDay.count === 0
@@ -484,6 +650,10 @@ export const ActivityStatusBento: FC = () => {
                 </span>
                 <span className="text-[var(--theme-ink-legend)]"> · </span>
                 <span>{formatContributionDate(selectedDay.date)}</span>
+              </span>
+            ) : status === 'fallback' ? (
+              <span className="block truncate text-[var(--theme-ink-legend)]">
+                Live API unreachable — showing offline snapshot. Hover, tap, or use arrow keys to inspect
               </span>
             ) : (
               <span className="block truncate text-[var(--theme-ink-legend)]">

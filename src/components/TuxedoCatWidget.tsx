@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FC } from 'react';
 import { LuTerminal } from 'react-icons/lu';
+import { useIntro } from '../context/useIntro';
+import { loadAsciiReveal, useLazyAsciiReveal } from '../utils/lazyAsciiReveal';
 
 type CatMood = 'sleepy' | 'meow' | 'alert' | 'annoyed' | 'angry';
 
@@ -203,7 +205,23 @@ export const TuxedoCatWidget: FC = () => {
   const [isTabVisible, setIsTabVisible] = useState(
     () => typeof document === 'undefined' || !document.hidden,
   );
+  const { isIntroActive } = useIntro();
+  const [bootState, setBootState] = useState<'waiting' | 'revealing' | 'done'>(() => {
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return isIntroActive && !prefersReduced ? 'waiting' : 'done';
+  });
+  const bootCancelledRef = useRef(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const { ref: catRevealRef, reveal: revealCat } = useLazyAsciiReveal<HTMLDivElement>({
+    preset: 'terminal',
+    duration: 'fast',
+    speed: 0.95,
+    origin: 'top-left',
+    lazy: false,
+  });
 
   const current = stages[stageIndex];
 
@@ -238,12 +256,66 @@ export const TuxedoCatWidget: FC = () => {
   }, []);
 
   useEffect(() => {
+    if (bootState !== 'waiting') return;
+    let active = true;
+
+    const safetyTimer = window.setTimeout(() => {
+      if (active && !bootCancelledRef.current) {
+        setBootState('done');
+      }
+    }, 1100);
+
+    const modulePromise = loadAsciiReveal().catch(() => null);
+    const delayTimer = window.setTimeout(() => {
+      void modulePromise.then((mod) => {
+        if (!active || bootCancelledRef.current) return;
+        if (!mod) {
+          setBootState('done');
+          return;
+        }
+        setBootState('revealing');
+      });
+    }, 380);
+
+    return () => {
+      active = false;
+      window.clearTimeout(delayTimer);
+      window.clearTimeout(safetyTimer);
+    };
+  }, [bootState]);
+
+  useLayoutEffect(() => {
+    if (bootState !== 'revealing') return;
+    let active = true;
+
+    const safetyTimer = window.setTimeout(() => {
+      if (active) setBootState('done');
+    }, 900);
+
+    void revealCat()
+      .catch(() => {
+        // Reveal cleanly falls back to visible content
+      })
+      .finally(() => {
+        window.clearTimeout(safetyTimer);
+        if (active) {
+          setBootState('done');
+        }
+      });
+
+    return () => {
+      active = false;
+      window.clearTimeout(safetyTimer);
+    };
+  }, [bootState, revealCat]);
+
+  useEffect(() => {
     if (reducedMotion) {
       setFrameIndex(0);
       return;
     }
 
-    if (!isVisible || !isTabVisible) {
+    if (bootState !== 'done' || !isVisible || !isTabVisible) {
       return;
     }
 
@@ -252,9 +324,13 @@ export const TuxedoCatWidget: FC = () => {
     }, current.intervalMs);
 
     return () => window.clearInterval(timer);
-  }, [current.frames.length, current.intervalMs, reducedMotion, isVisible, isTabVisible]);
+  }, [current.frames.length, current.intervalMs, reducedMotion, bootState, isVisible, isTabVisible]);
 
   const handleInteract = () => {
+    if (bootState !== 'done') {
+      bootCancelledRef.current = true;
+      setBootState('done');
+    }
     setStageIndex((prev) => (prev + 1) % stages.length);
     setFrameIndex(0);
     setPokes((prev) => prev + 1);
@@ -297,49 +373,68 @@ export const TuxedoCatWidget: FC = () => {
           </span>
         </div>
 
-        {/* Terminal Stage */}
-        <div className="flex flex-1 flex-col items-center justify-center px-3 py-4">
-          <div
-            key={`bubble-${stageIndex}-${pokes}`}
-            className={`mb-2.5 inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs font-medium shadow-[0_2px_0_var(--theme-bevel)] ${
-              pokes > 0 ? 'bubble-pop' : ''
-            } ${current.bubbleClass}`}
-          >
-            <span className="text-[var(--theme-ink-legend)]" aria-hidden="true">
-              $
-            </span>
-            <span className="truncate">{current.bubble}</span>
+        {/* Terminal Stage + Live Terminal Log */}
+        <div
+          ref={catRevealRef}
+          className={`relative flex flex-1 flex-col justify-between ${
+            bootState === 'waiting' ? 'opacity-0' : ''
+          }`}
+        >
+          {/* Terminal Stage */}
+          <div className="flex flex-1 flex-col items-center justify-center px-3 py-4">
+            <div
+              key={`bubble-${stageIndex}-${pokes}`}
+              className={`mb-2.5 inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs font-medium shadow-[0_2px_0_var(--theme-bevel)] ${
+                pokes > 0 ? 'bubble-pop' : ''
+              } ${current.bubbleClass}`}
+            >
+              <span
+                className="text-[var(--theme-ink-legend)]"
+                aria-hidden="true"
+                data-ascii="skip"
+              >
+                $
+              </span>
+              <span className="truncate">{current.bubble}</span>
+            </div>
+
+            <div key={`cat-${stageIndex}-${pokes}`} className={`max-w-full overflow-x-auto ${reactionClass}`}>
+              <pre
+                className={`m-0 select-none whitespace-pre font-mono text-xs leading-snug sm:text-[13px] ${current.artClass}`}
+                aria-hidden="true"
+              >
+                {activeAscii}
+              </pre>
+            </div>
           </div>
 
-          <div key={`cat-${stageIndex}-${pokes}`} className={`max-w-full overflow-x-auto ${reactionClass}`}>
-            <pre
-              className={`m-0 select-none whitespace-pre font-mono text-xs leading-snug sm:text-[13px] ${current.artClass}`}
-              aria-hidden="true"
+          {/* Live Terminal Log & Prompt Footer */}
+          <div className="border-t border-[var(--theme-border-well)]/80 bg-[var(--theme-terminal-footer)] px-3 py-2 font-mono text-[11px] leading-snug">
+            <div className={`truncate ${current.logClass}`}>
+              <span
+                className="text-[var(--theme-ink-legend)]"
+                aria-hidden="true"
+                data-ascii="skip"
+              >
+                &gt;{' '}
+              </span>
+              <span>{current.formatLog(pokes)}</span>
+            </div>
+            <div
+              className="mt-0.5 flex items-center text-[var(--theme-ink-legend)]"
+              data-ascii="skip"
             >
-              {activeAscii}
-            </pre>
-          </div>
-        </div>
-
-        {/* Live Terminal Log & Prompt Footer */}
-        <div className="border-t border-[var(--theme-border-well)]/80 bg-[var(--theme-terminal-footer)] px-3 py-2 font-mono text-[11px] leading-snug">
-          <div className={`truncate ${current.logClass}`}>
-            <span className="text-[var(--theme-ink-legend)]" aria-hidden="true">
-              &gt;{' '}
-            </span>
-            <span>{current.formatLog(pokes)}</span>
-          </div>
-          <div className="mt-0.5 flex items-center text-[var(--theme-ink-legend)]">
-            <span>kueno@tty:~$&nbsp;</span>
-            <span
-              key={`cursor-${pokes}`}
-              className={`${
-                showPokeCursor ? 'tty-cursor ' : 'opacity-75 '
-              }text-[var(--theme-accent-mint)]`}
-              aria-hidden="true"
-            >
-              █
-            </span>
+              <span>kueno@tty:~$&nbsp;</span>
+              <span
+                key={`cursor-${pokes}`}
+                className={`${
+                  showPokeCursor ? 'tty-cursor ' : 'opacity-75 '
+                }text-[var(--theme-accent-mint)]`}
+                aria-hidden="true"
+              >
+                █
+              </span>
+            </div>
           </div>
         </div>
       </button>

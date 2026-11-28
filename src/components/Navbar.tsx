@@ -20,8 +20,10 @@ import {
   LuSun,
   LuX,
 } from 'react-icons/lu';
+import { useIntro } from '../context/useIntro';
 import { useTheme } from '../context/useTheme';
 import { profileData } from '../data/profile';
+import { useLazyAsciiReveal } from '../utils/lazyAsciiReveal';
 import { LogoMark } from './LogoMark';
 
 const navLinks = [
@@ -53,11 +55,29 @@ interface SpringState {
   initialized: boolean;
 }
 
+const LOGO_BOOT_GLYPHS = ['░', '▒', '▓', '╬'] as const;
+
 export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   const [activeId, setActiveId] = useState<string>('hero');
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoverRect, setHoverRect] = useState<PillRect | null>(null);
+  const { isIntroActive } = useIntro();
+  const [logoGlyphIndex, setLogoGlyphIndex] = useState<number | null>(() => {
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return isIntroActive && !prefersReduced ? 0 : null;
+  });
+  const [logoSnapped, setLogoSnapped] = useState(false);
   const { theme, toggleTheme } = useTheme();
+
+  const { ref: brandHandleRef, reveal: revealHandle } = useLazyAsciiReveal<HTMLSpanElement>({
+    preset: 'terminal',
+    duration: 'fast',
+    speed: 1.15,
+    origin: 'top-left',
+    lazy: false,
+  });
 
   const railRef = useRef<HTMLElement | null>(null);
   const stabilizerRef = useRef<HTMLDivElement | null>(null);
@@ -330,6 +350,47 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
   }, []);
 
   useEffect(() => {
+    if (!isIntroActive) return;
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      setLogoGlyphIndex(null);
+      return;
+    }
+
+    const timers: number[] = [];
+    const stepMs = 65;
+
+    for (let idx = 1; idx < LOGO_BOOT_GLYPHS.length; idx++) {
+      timers.push(
+        window.setTimeout(() => {
+          setLogoGlyphIndex(idx);
+        }, idx * stepMs),
+      );
+    }
+
+    timers.push(
+      window.setTimeout(() => {
+        setLogoGlyphIndex(null);
+        setLogoSnapped(true);
+      }, LOGO_BOOT_GLYPHS.length * stepMs),
+    );
+
+    timers.push(
+      window.setTimeout(() => {
+        void revealHandle();
+      }, 80),
+    );
+
+    return () => {
+      for (const id of timers) {
+        window.clearTimeout(id);
+      }
+    };
+  }, [isIntroActive, revealHandle]);
+
+  useEffect(() => {
     const onResize = () => {
       if (window.innerWidth >= 768) setMenuOpen(false);
     };
@@ -364,15 +425,31 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--theme-border)] bg-[var(--theme-header-bg)] backdrop-blur-md">
+      <header className="init-header sticky top-0 z-40 border-b border-[var(--theme-border)] bg-[var(--theme-header-bg)] backdrop-blur-md">
         <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-2 px-4 py-2 sm:gap-3 sm:px-6">
           <a
             href="#hero"
             onClick={() => lockActiveTo('hero')}
             className="keycap flex min-h-[44px] min-w-[44px] shrink-0 items-center gap-2 px-3 py-2 text-xs tracking-wide text-[var(--theme-ink-primary)] no-underline sm:min-h-[38px] sm:py-1.5"
           >
-            <LogoMark className="h-4 w-4 shrink-0 text-[var(--theme-ink-primary)]" />
-            <span className="font-semibold text-[var(--theme-accent-pink)]">
+            {logoGlyphIndex !== null ? (
+              <span
+                aria-hidden="true"
+                className="inline-flex h-4 w-4 shrink-0 items-center justify-center font-mono text-[13px] leading-none text-[var(--theme-accent-mint)]"
+              >
+                {LOGO_BOOT_GLYPHS[logoGlyphIndex]}
+              </span>
+            ) : (
+              <LogoMark
+                className={`h-4 w-4 shrink-0 text-[var(--theme-ink-primary)]${
+                  logoSnapped ? ' init-logo-snap' : ''
+                }`}
+              />
+            )}
+            <span
+              ref={brandHandleRef}
+              className="inline-block font-semibold text-[var(--theme-accent-pink)]"
+            >
               {profileData.handle}
             </span>
           </a>
@@ -466,7 +543,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenPalette }) => {
       {/* Fixed Right-Edge Vertical Icon Switch Rail */}
       <nav
         ref={railRef}
-        className="switch-rail fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 md:inline-flex xl:right-5"
+        className="switch-rail init-rail fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 md:inline-flex xl:right-5"
         aria-label="Primary navigation"
         onMouseLeave={() => setHoverRect(null)}
       >

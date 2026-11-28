@@ -20,8 +20,10 @@ export interface LazyAsciiRevealOptions extends Omit<AsciiRevealOptions, 'preset
   preset?: AsciiRevealOptions['preset'] | 'logo-terminal';
 }
 
-export function useLazyAsciiReveal(options: LazyAsciiRevealOptions) {
-  const elementRef = useRef<HTMLDivElement | null>(null);
+export function useLazyAsciiReveal<T extends HTMLElement = HTMLDivElement>(
+  options: LazyAsciiRevealOptions,
+) {
+  const elementRef = useRef<T | null>(null);
   const controllerRef = useRef<AsciiRevealController | null>(null);
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -32,7 +34,7 @@ export function useLazyAsciiReveal(options: LazyAsciiRevealOptions) {
   }, []);
 
   const ref = useCallback(
-    (node: HTMLDivElement | null) => {
+    (node: T | null) => {
       if (elementRef.current !== node) {
         destroyController();
         elementRef.current = node;
